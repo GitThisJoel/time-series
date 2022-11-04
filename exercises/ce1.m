@@ -2,6 +2,7 @@ clear
 close all
 
 addpath("../CourseMaterial/Code/data");
+addpath("../CourseMaterial/Code/functions");
 
 %% 2.1
 
@@ -16,7 +17,7 @@ arma1 = idpoly(A1, [], C1);
 arma2 = idpoly(A2, [], C2);
 
 rng(0)
-sigma2 = 4;
+sigma2 = 1.5;
 N = 300;
 e = sqrt(sigma2) * rand(N, 1);
 
@@ -25,9 +26,6 @@ y2 = filter(arma2.c, arma2.a, e);
 
 y1 = y1(101:end);
 y2 = y2(101:end);
-
-% arma2 is unsable since one pole is outside of the unit cirle.
-% why...
 
 close all
 subplot(221)
@@ -43,3 +41,20 @@ title("filtered signal y1")
 subplot(224)
 plot(y2)
 title("filtered signal y2")
+
+% arma2 is unsable since one pole is outside of the unit cirle.
+% why...
+
+m = 20;
+r_theo = kovarians(arma1.c, arma1.a, m);
+figure
+stem(0:m, r_theo * sigma2)
+hold on
+r_est = covf(y1, m + 1);
+stem(0:m, r_est, 'r')
+
+%% 2.2
+
+%% 2.3
+
+%% 2.4
