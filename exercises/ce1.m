@@ -1,6 +1,6 @@
 clear
 close all
-
+% hej
 addpath("../CourseMaterial/Code/data");
 addpath("../CourseMaterial/Code/functions");
 
