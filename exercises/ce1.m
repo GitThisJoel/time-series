@@ -42,7 +42,7 @@ subplot(224)
 plot(y2)
 title("filtered signal y2")
 
-% arma2 is unsable since one pole is outside of the unit cirle.
+% arma2 is unsable since one pole is outside of the unit circle.
 % why...
 
 m = 20;
@@ -53,7 +53,69 @@ hold on
 r_est = covf(y1, m + 1);
 stem(0:m, r_est, 'r')
 
+%% 2.1 cont.
+close all
+
+y = iddata(y1);
+
+na = 2;
+nc = 2;
+ar_model = arx(y, [na]);
+arma_model = armax(y, [na nc]);
+
+% the ACF/PACF plot points to a AR(2) process.
+% normplot = ?
+% ACFnPACFnNormplot(y1, 32);
+
+e_hat = filter(ar_model.a, ar_model.c, y1);
+
+figure 
+subplot(121)
+plot(e_hat(1:20))
+title("first samples corrupted")
+
+subplot(122)
+e_hat = e_hat(100:end);
+plot(e_hat(1:20))
+title("no corruption")
+
+% FPE??
+% model est. ...
+
 %% 2.2
+
+clear 
+close all
+
+load data.dat % arma(1,1)
+load noise.dat
+
+data = iddata(data);
+
+% ACFnPACFnNormplot(data, 32); 
+% Some ringing in the ACF, 4 non zero values in PACF => AR(4)?
+
+%% 2.2 AR(p) est.
+% This shows that a AR(3) is enough
+for i=1:5
+    arx_model = arx(data, i);
+    resid(arx_model, data);
+    title(sprintf("AR(%d) process", i))
+    pause;
+end
+
+%% 2.2 cont.
+ar3_model = arx(data, 3);
+resid(ar3_model, data);
+rar3 = resid(ar3_model, data);
+
+na = 3; 
+figure
+plot(noise(na:end))
+hold on 
+plot(rar3.y(na:end)) 
+legend("noise", "residuals")
+title("noise vs. residuals")
 
 %% 2.3
 
