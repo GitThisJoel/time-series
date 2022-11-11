@@ -229,41 +229,48 @@ ACFnPACFnNormplot(arma12.y, 32);
 
 %% 2.4
 
-close all
-clear
-
 load svedala
 data = svedala;
 
-% abs_min = abs(min(data));
-% data = log(data+abs_min*2);
+N = length(data);
+X = [ones(N, 1) (1:N)'];
+mk = (X' * X) \ X' * data;
 
-ACFnPACFnNormplot(data, 32);
+plot_trend = 0;
 
-% A = arx, C = max
+if plot_trend
+    figure
+    subplot(211)
+    plot(data)
+    hold on
+    plot(mk(1) + mk(2) * (1:N)', 'r')
+    legend("data", "linear trend")
+    title("data and linear trend")
+
+    subplot(212)
+    plot(data - mk(1) - mk(2) * (1 * N)')
+    title("data without trend")
+end
+
+% differenting data
+data = filter([1 -1], 1, data);
+data = data(2:end);
+
+% ACFnPACFnNormplot(data, 32);
+% AR(2)?
+
 A = [1 0 0]; B = []; C = [];
 model_init = idpoly(A, B, C);
 model_armax = pem(data, model_init);
-
 figure
 resid(model_armax, data);
 rarma = resid(model_armax, data);
-
 ACFnPACFnNormplot(rarma.OutputData, 32);
 
-A = [1 0 0]; B = []; C = [1 zeros(1, 25)];
+A = [1 0 0]; B = []; C = [1 zeros(1, 24)];
 model_init = idpoly(A, B, C);
-% model_init.Structure.c.Free = [zeros(1,10) 1 zeros(1,23-11) 1 1 1];
-model_init.Structure.c.Free = [zeros(1, 23) 1 1 1];
-data = myFilter(model_init.A, model_init.C, data);
-
 model_armax = pem(data, model_init);
 
 figure
 resid(model_armax, data);
 rarma = resid(model_armax, data);
-
-ACFnPACFnNormplot(rarma.OutputData, 32);
-
-checkIfNormal(rarma.OutputData, "arma");
-checkIfWhite(rarma.OutputData);
