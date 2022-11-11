@@ -230,10 +230,9 @@ clear
 
 load svedala
 data = svedala;
-abs_min = abs(min(data));
 
-epsilon = 10^-6;
-data = log(data+abs_min+epsilon);
+% abs_min = abs(min(data));
+% data = log(data+abs_min*2);
 
 ACFnPACFnNormplot(data, 32); 
 
@@ -248,9 +247,12 @@ rarma = resid(model_armax, data);
  
 ACFnPACFnNormplot(rarma.OutputData, 32); 
 
-A = [1 0 0]; B = []; C = [1 zeros(1,24)];
+A = [1 0 0]; B = []; C = [1 zeros(1,25)];
 model_init = idpoly(A,B,C);
-model_init.Structure.c.Free = [zeros(1,24) 1];
+% model_init.Structure.c.Free = [zeros(1,10) 1 zeros(1,23-11) 1 1 1];
+model_init.Structure.c.Free = [zeros(1,23) 1 1 1];
+data = myFilter(model_init.A, model_init.C, data);
+
 model_armax = pem(data, model_init);
 
 figure
@@ -258,3 +260,6 @@ resid(model_armax, data);
 rarma = resid(model_armax, data);
  
 ACFnPACFnNormplot(rarma.OutputData, 32); 
+
+checkIfNormal(rarma.OutputData, "arma");
+checkIfWhite(rarma.OutputData);
