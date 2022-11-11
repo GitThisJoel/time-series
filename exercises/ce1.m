@@ -74,7 +74,7 @@ ACFnPACFnNormplot(y1, 32);
 % e_hat = filter(ar_model.a, ar_model.c, y1);
 e_hat = filter(arma_model.a, arma_model.c, y1);
 
-figure 
+figure
 subplot(121)
 plot(e_hat(1:20))
 title("first samples corrupted")
@@ -96,29 +96,33 @@ y = iddata(y1);
 lim = 4;
 minfpe = inf;
 disp("starting loop")
-for na=1:lim
-    for nc=1:lim 
+
+for na = 1:lim
+
+    for nc = 1:lim
         arma_model = armax(y, [na nc]);
         % e_hat = filter(arma_model.a, arma_model.c, y1);
         % e_hat = e_hat(100:end);
         f = fpe(arma_model);
-        %if f < minfpe
-%             minfpe = f;
-%             minna = na;
-%             minnc = nc;
-            fprintf("na = %d, nc = %d, fpe = %d\n", na, nc, f)
-%             e_hat = myFilter(arma_model.a, arma_model.c, y1);
-%             ACFnPACFnNormplot(e_hat, 32);
-%             hold on
-%             pause;
-        %end 
-    end 
-end 
+        % if f < minfpe
+        % minfpe = f;
+        % minna = na;
+        % minnc = nc;
+        fprintf("na = %d, nc = %d, fpe = %d\n", na, nc, f)
+        % e_hat = myFilter(arma_model.a, arma_model.c, y1);
+        % ACFnPACFnNormplot(e_hat, 32);
+        % hold on
+        % pause;
+        % end
+    end
+
+end
+
 disp("done")
 
 %% 2.2
 
-clear 
+clear
 close all
 
 load data.dat % arma(1,1)
@@ -126,12 +130,12 @@ load noise.dat
 
 data = iddata(data);
 
-% ACFnPACFnNormplot(data, 32); 
+% ACFnPACFnNormplot(data, 32);
 % Some ringing in the ACF, 4 non zero values in PACF => AR(4)?
 
 %% 2.2 AR(p) est.
 % This shows that a AR(3) is enough
-for i=1:5
+for i = 1:5
     arx_model = arx(data, i);
     resid(arx_model, data);
     title(sprintf("AR(%d) process", i))
@@ -145,25 +149,25 @@ present(ar3_model)
 resid(ar3_model, data);
 rar3 = resid(ar3_model, data);
 
-na = 3; 
+na = 3;
 figure
 plot(noise(na:end))
-hold on 
-plot(rar3.y(na:end)) 
+hold on
+plot(rar3.y(na:end))
 legend("noise", "residuals")
 title("noise vs. residuals")
 
-%% 2.2 arma-model 
+%% 2.2 arma-model
 
 arma12 = armax(data, [1 2]);
 resid(arma12, data);
 rarma12 = resid(arma12, data);
 
-na = 3; 
+na = 3;
 figure
 plot(noise(na:end))
-hold on 
-plot(rarma12.y(na:end)) 
+hold on
+plot(rarma12.y(na:end))
 legend("noise", "residuals")
 title("noise vs. residuals")
 
@@ -173,7 +177,7 @@ title("noise vs. residuals")
 
 %% 2.3
 
-close all 
+close all
 clear
 
 N = 10000; % 600
@@ -184,33 +188,33 @@ C = [1 zeros(1, 11) -0.5];
 A12 = [1 zeros(1, 11) -1];
 Astar = conv(A, A12);
 e = randn(N, 1);
-y = filter(C,Astar,e);
+y = filter(C, Astar, e);
 y = y(101:end);
-plot(y) 
+plot(y)
 
-ACFnPACFnNormplot(y, 32); 
+ACFnPACFnNormplot(y, 32);
 
 y_s = filter(A12, 1, y);
 y_s = y_s(length(A12):end);
 data = iddata(y_s);
 
 A = [1 0 0]; B = []; C = [];
-model_init = idpoly(A,B,C);
+model_init = idpoly(A, B, C);
 model_armax = pem(data, model_init);
 
 resid(model_armax, data);
 rarma = resid(model_armax, data);
 
-ACFnPACFnNormplot(rarma.OutputData, 32); 
+ACFnPACFnNormplot(rarma.OutputData, 32);
 
-A = [1 0 0]; B = []; C = [1 zeros(1,12)];
-model_init = idpoly(A,B,C);
-model_init.Structure.c.Free = [zeros(1,12) 1];
+A = [1 0 0]; B = []; C = [1 zeros(1, 12)];
+model_init = idpoly(A, B, C);
+model_init.Structure.c.Free = [zeros(1, 12) 1];
 model_armax = pem(data, model_init);
 
 resid(model_armax, data);
 rarma = resid(model_armax, data);
-ACFnPACFnNormplot(rarma.OutputData, 32); 
+ACFnPACFnNormplot(rarma.OutputData, 32);
 
 checkIfNormal(rarma.OutputData, "arma");
 checkIfWhite(rarma.OutputData);
@@ -225,8 +229,8 @@ ACFnPACFnNormplot(arma12.y, 32);
 
 %% 2.4
 
-close all 
-clear 
+close all
+clear
 
 load svedala
 data = svedala;
@@ -234,23 +238,23 @@ data = svedala;
 % abs_min = abs(min(data));
 % data = log(data+abs_min*2);
 
-ACFnPACFnNormplot(data, 32); 
+ACFnPACFnNormplot(data, 32);
 
-% A = arx, C = max 
+% A = arx, C = max
 A = [1 0 0]; B = []; C = [];
-model_init = idpoly(A,B,C);
+model_init = idpoly(A, B, C);
 model_armax = pem(data, model_init);
 
 figure
 resid(model_armax, data);
 rarma = resid(model_armax, data);
- 
-ACFnPACFnNormplot(rarma.OutputData, 32); 
 
-A = [1 0 0]; B = []; C = [1 zeros(1,25)];
-model_init = idpoly(A,B,C);
+ACFnPACFnNormplot(rarma.OutputData, 32);
+
+A = [1 0 0]; B = []; C = [1 zeros(1, 25)];
+model_init = idpoly(A, B, C);
 % model_init.Structure.c.Free = [zeros(1,10) 1 zeros(1,23-11) 1 1 1];
-model_init.Structure.c.Free = [zeros(1,23) 1 1 1];
+model_init.Structure.c.Free = [zeros(1, 23) 1 1 1];
 data = myFilter(model_init.A, model_init.C, data);
 
 model_armax = pem(data, model_init);
@@ -258,8 +262,8 @@ model_armax = pem(data, model_init);
 figure
 resid(model_armax, data);
 rarma = resid(model_armax, data);
- 
-ACFnPACFnNormplot(rarma.OutputData, 32); 
+
+ACFnPACFnNormplot(rarma.OutputData, 32);
 
 checkIfNormal(rarma.OutputData, "arma");
 checkIfWhite(rarma.OutputData);
