@@ -10,6 +10,7 @@
 %
 clear; clc;
 close all;
+addpath('../functions', '../data')              % Add this line to update the path
 rng(0)                                          % Set the seed (just done for the lecture!)
 extraN   = 400;
 N        = 1200;
