@@ -37,6 +37,30 @@ plotRealnOustide(A, C, Aoutside, Coutside, data);
 
 % cannot really see any difference for C outside.
 
+%% t3
+
+close all
+
+load week2data
+data = y;
+
+% figure
+% plot(data)
+% ACFnPACFnNormplot(data, 32);
+
+A = [1 0 0 0]; B = []; C = [1 0 0];
+model_init = idpoly(A, B, C);
+model_arma = pem(data, model_init);
+figure
+resid(model_arma, data);
+rarma = resid(model_arma, data);
+ACFnPACFnNormplot(rarma.OutputData, 32);
+
+checkIfNormal(rarma.OutputData, "model_arma");
+checkIfWhite(rarma.OutputData);
+
+%% functions
+
 function plotACFnPACFnReal(A, C, data, plotInd, procStr)
     noLags = 32;
     signLvl = 0.05;
