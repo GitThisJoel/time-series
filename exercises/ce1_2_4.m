@@ -9,6 +9,8 @@ rng(0);
 load svedala
 data = svedala;
 
+residOpts = residOptions("MaxLag", 32);
+
 N = length(data);
 X = [ones(N, 1) (1:N)'];
 mk = (X' * X) \ X' * data;
@@ -39,15 +41,16 @@ data = data(2:end);
 A = [1 0 0]; B = []; C = [];
 model_init = idpoly(A, B, C);
 model_armax = pem(data, model_init);
+
 figure
-resid(model_armax, data);
+resid(model_armax, data, residOpts);
 rarma = resid(model_armax, data);
 ACFnPACFnNormplot(rarma.OutputData, 32);
- 
+
 A = [1 0 0]; B = []; C = [1 zeros(1, 24)];
 model_init = idpoly(A, B, C);
 model_armax = pem(data, model_init);
 
 figure
-resid(model_armax, data);
+resid(model_armax, data, residOpts);
 rarma = resid(model_armax, data);
