@@ -81,38 +81,6 @@ plot(e_hat(1:21))
 title("no corruption")
 ACFnPACFnNormplot(e_hat, 32);
 
-%% 2.1 loop
-close all
-
-y = iddata(y1);
-
-lim = 4;
-minfpe = inf;
-disp("starting loop")
-
-for na = 1:lim
-
-    for nc = 1:lim
-        arma_model = armax(y, [na nc]);
-        % e_hat = filter(arma_model.a, arma_model.c, y1);
-        % e_hat = e_hat(100:end);
-        f = fpe(arma_model);
-        % if f < minfpe
-        % minfpe = f;
-        % minna = na;
-        % minnc = nc;
-        fprintf("na = %d, nc = %d, fpe = %d\n", na, nc, f)
-        % e_hat = myFilter(arma_model.a, arma_model.c, y1);
-        % ACFnPACFnNormplot(e_hat, 32);
-        % hold on
-        % pause;
-        % end
-    end
-
-end
-
-disp("done")
-
 %% 2.2
 
 clear
