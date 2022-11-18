@@ -21,7 +21,7 @@ arma2 = idpoly(A2, [], C2);
 rng(0)
 sigma2 = 1.5;
 N = 300;
-e = sqrt(sigma2) * rand(N, 1);
+e = sqrt(sigma2) * randn(N, 1);
 
 y1 = filter(arma1.c, arma1.a, e);
 y2 = filter(arma2.c, arma2.a, e);
@@ -62,31 +62,24 @@ y = iddata(y1);
 
 na = 2;
 nc = 2;
-ar_model = arx(y, [na]);
 arma_model = armax(y, [na nc]);
 
-present(ar_model)
 present(arma_model)
-% the ACF/PACF plot points to a AR(2) process.
-% normplot = ?
 ACFnPACFnNormplot(y1, 32);
 
-% e_hat = filter(ar_model.a, ar_model.c, y1);
 e_hat = filter(arma_model.a, arma_model.c, y1);
 
 figure
 subplot(121)
-plot(e_hat(1:20))
-title("first samples corrupted")
+plot(e_hat(1:21))
+title("first 20 samples corrupted")
+
+e_hat = e_hat(length(arma_model.a):end);
 
 subplot(122)
-e_hat = e_hat(100:end);
-plot(e_hat(1:20))
+plot(e_hat(1:21))
 title("no corruption")
 ACFnPACFnNormplot(e_hat, 32);
-
-% FPE??
-% model est. ...
 
 %% 2.1 loop
 close all
