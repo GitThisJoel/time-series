@@ -36,4 +36,5 @@ fprintf('\nThe variance of the residual is %5.3f.\n', var(ey) )
 [acfEst, pacfEst] = plotACFnPACF( ey, noLags, titleStr );
 
 % Is the residual white? Lets examine the Monti test.
+checkIfNormal( ey, "" ); close; % closes the window that checkIfNormal produces... 
 checkIfWhite( ey );
