@@ -18,7 +18,6 @@ C2 = [1 -0.18 -0.11];
 arma1 = idpoly(A1, [], C1);
 arma2 = idpoly(A2, [], C2);
 
-rng(0)
 sigma2 = 1.5;
 N = 300;
 e = sqrt(sigma2) * randn(N, 1);
@@ -134,8 +133,6 @@ title("noise vs. residuals")
 
 % arma(1,2) had a lower MSE than ar(3).
 
-% show with plot?
-
 %% 2.3
 
 close all
@@ -197,7 +194,7 @@ residOpts = residOptions("MaxLag", 32); % inc number of lags
 
 N = length(data);
 X = [ones(N, 1) (1:N)'];
-mk = (X' * X) \ X' * data;
+mk = (X' * X) \ X' * data; % LS
 
 plot_trend = 0;
 
