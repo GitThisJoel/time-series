@@ -52,11 +52,29 @@ title('Crosscorrelation between in- and output')
 %% Construct model for input signal
 ACFnPACFnNormplot(x,32);
 
-% Test an AR1 first
+%% Test an AR1 first
 ar_model_1 = estimateARMA(x,[1 1], [1] , "AR1",32)
 
-% Works ok, maybee remove something at lag 4
+%% Works ok, maybee remove something at lag 4
 ar_model_4 = estimateARMA(x,[1 1 0 0 1], [1], "AR4",32)
 
-% the model choosen for x is an AR(4), which is not too close to the 
-% ARMA(1,2) that generated the data.
+% the model choosen for x is an AR(1), since adding the 4:th component does
+% not add significantly to them odel acuracy in our opinion.
+% Data genererat med ARMA(1,2)
+
+%%
+arma_model = estimateARMA(x,[1 1],[1 1 1], "ARMA(1,2)", 32)
+
+%% Pre-whiten y_t
+w_t = filter(arma_model.A, arma_model.C, x); 
+w_t = w_t(length(arma_model.A):end);
+eps_t = filter(arma_model.A, arma_model.C, y);
+eps_t = eps_t(length(arma_model.A):end);
+
+%%
+M = 40; stem(-M:M, crosscorr( w_t , eps_t , M) ) ;
+title( ' Cross_correlation_function' ) , xlabel ( ' Lag ' )
+hold on
+plot(-M:M, 2/ sqrt ( n )* ones( 1 , 2*M+1) , '--' )
+plot(-M:M, -2/sqrt ( n )* ones( 1 , 2*M+1) , '--' )
+hold off
