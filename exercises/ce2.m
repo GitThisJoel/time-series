@@ -105,4 +105,35 @@ ACFnPACFnNormplot(etilde.y,32)
 etilde_ar_1 = estimateARMA(etilde.y,[1 1], [1], 'ar1\_etilde', 32)
 present(etilde_ar_1)
 
+
 % This model looks good :)
+
+%% Create the complete model
+A1 = [1 0];
+A2 = A2;
+B = B;
+C = [1];
+Mi = idpoly( 1 ,B,C,A1 ,A2 ) ;
+z = iddata (y , x ) ;
+MboxJ = pem( z ,Mi ) ;
+present (MboxJ)
+ehat = resid (MboxJ , z ) ;
+
+%% Analyse the model residual
+
+% all parameters in the model are significant
+
+% looks white
+ACFnPACFnNormplot(ehat.y,32);
+
+% test if white, ok
+checkIfNormal(ehat.y,'');
+checkIfWhite(ehat.y);
+
+% crosscorrelation between x and ehat, insignificant for low lags. some
+% small significant componenets for relatively big lags, can probably be
+% ignored.
+CCF(x, ehat.y, 'x vs ehat')
+
+
+
