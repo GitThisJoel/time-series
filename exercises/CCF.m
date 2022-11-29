@@ -12,6 +12,7 @@ function CCF(w_t, eps_t, titleStr, M, n)
         titleStr = "";
     end
 
+    figure
     stem(-M:M, crosscorr(w_t, eps_t, M), "b");
     title(sprintf('Cross correlation function %s', titleStr)), xlabel('Lag')
     hold on
