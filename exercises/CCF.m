@@ -1,7 +1,7 @@
 function CCF(w_t, eps_t, titleStr, M, n)
 
     if nargin < 5
-        n = 500;
+        n = length(w_t);
     end
 
     if nargin < 4

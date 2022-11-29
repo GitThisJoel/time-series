@@ -101,6 +101,14 @@ ACFnPACFnNormplot(etilde.y,32)
 % e_tilde is not white and it should not be since the delay is 4, so we are
 % expecting an MA(3), which is roughly what we have.
 
+%% Now use the model to estimate e_tilde
+% This is equvalent to what is done when etilde is formed with the
+% resid-comand
+
+e_tilde_2 = y - filter(Mba2.B, Mba2.F, x)
+
+ACFnPACFnNormplot(e_tilde_2 , 32)
+
 %% Lets try to model e_tilde
 etilde_ar_1 = estimateARMA(etilde.y,[1 1], [1], 'ar1\_etilde', 32)
 present(etilde_ar_1)
@@ -137,3 +145,50 @@ CCF(x, ehat.y, 'x vs ehat')
 
 
 
+
+
+%% 2.2 Hairdryer data
+close all
+clear all
+
+
+ts = 0.08;              % Sampling time [s]
+load ( 'tork.dat' )
+tork = tork - repmat (mean(tork), length(tork), 1) ;
+y = tork (:,1);
+x = tork (:,2);
+z = iddata (y,x) ;
+plot (z(1:300))
+
+%% Analyse input ata and construct model for it
+
+ACFnPACFnNormplot(x, 32)
+
+%% Test an AR(1)
+
+model_input_AR1 = estimateARMA(x,[1 1], [1], "AR(1) model of input", 32)
+present(model_input_AR1)
+
+% This model seams to work well, both ACF and PACF looks white
+
+%% Pre-whiten y and x with the abowe model
+w_t = filter(model_input_AR1.A, model_input_AR1.C, x);
+w_t = w_t(length(model_input_AR1.A):end);
+eps_t = filter(model_input_AR1.A, model_input_AR1.C, y);
+eps_t = eps_t(length(model_input_AR1.A):end);
+
+%% Look at cross correlation of pre-whitened x and y
+CCF(w_t,eps_t, "cross correlation of w\_t and eps\_t")
+
+% From the table in the book, first guess:
+d = 3;
+r = 1;
+s = 2;
+
+%% Create filter for input
+A2 = [1 zeros(1,r)];
+B = [zeros(1, d) ones(1, s + 1)];
+Mi = idpoly([1], [B], [], [], [A2]);
+z = iddata(y, x);
+Mba2 = pem(z, Mi); present(Mba2)
+etilde = resid(Mba2, z);
