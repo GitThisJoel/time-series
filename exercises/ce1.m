@@ -119,9 +119,9 @@ title("noise vs. residuals")
 
 %% 2.2 arma-model
 
-arma12 = armax(data, [1 2]);
-resid(arma12, data);
-rarma12 = resid(arma12, data);
+model = armax(data, [1 1]);
+resid(model, data);
+rarma12 = resid(model, data);
 
 na = 3;
 figure
@@ -179,13 +179,19 @@ checkIfWhite(rarma.OutputData);
 
 %% 2.3 no season
 
-arma12 = armax(y, [1 12]);
-resid(arma12, data);
-rarma12 = resid(arma12, data);
+C = [1 zeros(1,12)];
+model = idpoly([1 0 0], [], C);
+model.Structure.c.Free = [zeros(1, 12) 1];
+model = pem(y, model);
 
-ACFnPACFnNormplot(arma12.y, 32);
+% model = armax(y, [1 12]);
+resid(model, data);
+rarma12 = resid(model, data);
+
+% ACFnPACFnNormplot(model.y, 32);
 
 %% 2.4
+close all
 
 load svedala
 data = svedala;
@@ -213,7 +219,7 @@ if plot_trend
 end
 
 % differenting data
-data = filter([1 -1], 1, data);
+data = filter([1 zeros(1,23) -1], 1, data);
 data = data(2:end);
 
 % ACFnPACFnNormplot(data, 32);
@@ -222,6 +228,7 @@ data = data(2:end);
 A = [1 0 0]; B = []; C = [];
 model_init = idpoly(A, B, C);
 model_armax = pem(data, model_init);
+
 figure
 resid(model_armax, data, residOpts);
 rarma = resid(model_armax, data, residOpts);
@@ -229,7 +236,9 @@ ACFnPACFnNormplot(rarma.OutputData, 32);
 
 A = [1 0 0]; B = []; C = [1 zeros(1, 24)];
 model_init = idpoly(A, B, C);
+model_init.Structure.c.Free = [zeros(1, 24) 1];
 model_armax = pem(data, model_init);
+present(model_armax)
 
 figure
 resid(model_armax, data, residOpts);
