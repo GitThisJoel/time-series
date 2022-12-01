@@ -1,6 +1,11 @@
 close all
 clear all
 
+addpath("../CourseMaterial/Code/data");
+addpath("../CourseMaterial/Code/functions");
+
+%% Load data and split it into sets
+
 load('raw_data.mat')
 
 
@@ -29,7 +34,8 @@ halt_raw_konc = (halt_raw_konc_1.*flow_ing_1+halt_raw_konc_2.*flow_ing_2 )./flow
 flow_raw_remill = flow_raw_remill_1 + flow_raw_remill_2;
 halt_scav_konc = (halt_scav_konc_1.*flow_ing_1+halt_scav_konc_2.*flow_ing_2 )./flow_ing;
 flow_scav_remill = flow_scav_remill_1 + flow_scav_remill_2; 
-halt_ing_rep = (halt_raw_konc.*flow_raw_remill + halt_scav_konc.*flow_scav_remill) ./(flow_raw_remill + flow_scav_remill);
+flow_ing_rep = (flow_raw_remill + flow_scav_remill);
+halt_ing_rep = (halt_raw_konc.*flow_raw_remill + halt_scav_konc.*flow_scav_remill) ./flow_ing_rep;
 
 figure 
 plot(halt_raw_konc)
@@ -56,3 +62,49 @@ xlabel('Time [days]')
 %% Vi behöver hantera outliers, finns gott om dom...
 % spolvatten verkar vara rätt konstant så går nog bra att bara kvotera in
 % om vi behöver det, annars kanske försumbart
+
+% De signaler vi kommer jobba med är halten i koncentratet "halt_konc" och
+% som insignal kommer vi sedan att använda "halt_ing_rep" och eventuellt 
+% "flow_ing_rep" som insignaler.
+
+%% A. modeling without an external input
+close all
+figure 
+plot(halt_konc)
+
+% för att hålla ungefär samma datastorlek som i orginalprojektet bör
+% modeleringsdatat innehålla ca 1700 samples, this corresponds to roughly 7
+% days with our sampling intervall. 
+start = 6800;
+modeling_set = halt_konc(start:start+1700);
+validation_set = halt_konc(start+1701:start+1710+350 );
+test_set = halt_konc(start+length(halt_konc)*0.5:start+length(halt_konc)*0.5+350);
+
+figure
+plot(modeling_set)
+
+figure
+plot(validation_set)
+
+figure
+plot(test_set)
+
+figure
+plot(halt_konc)
+hold on
+xline(start)
+xline(start+1700)
+xline(start+1700+350)
+xline(start+length(halt_konc)*0.5)
+xline(start+length(halt_konc)*0.5+350)
+
+% I think this split looks ok, lets see if the data-size is sufficent
+
+%% Utreda om outliers behöver behandlas
+figure
+acf(modeling_set, 32, 0.05, 1);
+figure
+tacf(modeling_set, 32, 0.04, 0.05, 1);
+
+% Relativt lika, testar utan out-lier-behandlign till att börja med
+
