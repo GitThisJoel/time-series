@@ -216,19 +216,11 @@ load svedala
 y = svedala;
 y_mean = 11.35;
 
-%% data prep.
-%y = filter([1 zeros(1, 23) -1], 1, y);
-%y = y(2:end);
-
-model_data_size = 0.7;
-model_y = y(1:floor(length(y) * model_data_size));
-val_y = y(ceil(length(y) * model_data_size):end);
-
 %% Investigat one step prediction and check variance of noise
 A = [1 -1.79 0.84];
 C = [1 -0.18 -0.11];
 
-e = filter(A,C,y);
+e = filter(A, C, y);
 e = e(4:end);
 var(e)
 
@@ -247,11 +239,112 @@ checkIfWhite(ehat);
 var(ehat)
 
 %% 3-step prediction
+close all
+clear 
+
+load svedala
+y = svedala;
+
 k = 3;
+var_e = 0.3754;
+A = [1 -1.79 0.84];
+C = [1 -0.18 -0.11];
+k_step_prediction(k, A, C, y, var_e);
+
+k = 26;
+k_step_prediction(k, A, C, y, var_e);
+
+%% 2.4
+close all
+clear
+
+load sturup
+load svedala
+
+x = sturup;
+y = svedala;
+
+%% 2.4
+A = [1 -1.49 0.57];
+B = [0 0 0 0.28 -0.26];
+C = [1];
+
+k = 3;
+% k = 26;
+
 [Fk, Gk] = polydiv(C, A, k);
 
-filter_skip = max(length(Gk),length(C));
-yhat_k = myFilter(Gk, C, y, filter_skip);
-ehat_3 = y(filter_skip:end) - yhat_k;
+BF = conv(B, Fk);
+[Fhat, Ghat] = polydiv(BF, C, k);
 
-mean(ehat_3)
+yhatk = filter(Ghat, C, x) + filter(Gk, C, y); % pred without F
+
+yhatk2 = yhatk + filter(Fhat, 1, x); % pred with F
+
+remove = max ([length(Fhat) length(Ghat) length(Gk)]);
+yhatk2 = yhatk2(remove:end);
+yhatk = yhatk(remove:end);
+x_new = x(remove:end);
+y_new = y(remove:end);
+
+ehat = y(remove:end) - yhatk2;
+
+figure
+plot(y(remove:end))
+hold on
+plot(yhatk2)
+legend("svedala", "prediction (with F)")
+
+figure
+plot(ehat)
+title("error")
+
+figure
+plot(y(remove:end))
+hold on
+plot(yhatk)
+legend("svedala", "prediction (without F)")
+
+%% 2.5
+close all
+clear
+
+load svedala
+
+%% 2.5
+close all
+
+y = svedala;
+
+S = 24; % guess it is 24h
+AS = [1 zeros(1, S - 1) -1];
+
+y = filter(AS, 1, y);
+y = y(2:end);
+
+% ACFnPACFnNormplot(y, 32);
+
+A = [1 0 0]; B = []; C = [];
+model_init = idpoly(A, B, C);
+model_armax = pem(y, model_init);
+
+figure
+% resid(model_armax, y);
+rarma = resid(model_armax, y);
+% ACFnPACFnNormplot(rarma.OutputData, 32);
+
+A = [1 0 0]; B = []; C = [1 zeros(1, 24)];
+model_init = idpoly(A, B, C);
+model_init.Structure.c.Free = [zeros(1, 24) 1];
+model_armax = pem(y, model_init);
+present(model_armax)
+
+% figure
+% resid(model_armax, y);
+% rarma = resid(model_armax, y);
+
+%% 2.4 prediction
+close all
+k = 3;
+var_e = 0.3754;
+k_step_prediction(k, model_armax.A, model_armax.C, y, var_e)
