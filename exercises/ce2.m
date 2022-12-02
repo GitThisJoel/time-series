@@ -217,24 +217,41 @@ y = svedala;
 y_mean = 11.35;
 
 %% data prep.
-y = filter([1 zeros(1, 23) -1], 1, y);
-y = y(2:end);
+%y = filter([1 zeros(1, 23) -1], 1, y);
+%y = y(2:end);
 
 model_data_size = 0.7;
 model_y = y(1:floor(length(y) * model_data_size));
 val_y = y(ceil(length(y) * model_data_size):end);
 
-%%
+%% Investigat one step prediction and check variance of noise
 A = [1 -1.79 0.84];
 C = [1 -0.18 -0.11];
 
-k = 3;
+e = filter(A,C,y);
+e = e(4:end);
+var(e)
+
+k = 1;
 [Fk, Gk] = polydiv(C, A, k);
 
-filter_skip = 10;
+filter_skip = 3;
 yhat_k = myFilter(Gk, C, y, filter_skip);
 ehat = y(filter_skip:end) - yhat_k;
 figure
 plot(ehat)
 
 ACFnPACFnNormplot(ehat, nolags);
+
+checkIfWhite(ehat);
+var(ehat)
+
+%% 3-step prediction
+k = 3;
+[Fk, Gk] = polydiv(C, A, k);
+
+filter_skip = max(length(Gk),length(C));
+yhat_k = myFilter(Gk, C, y, filter_skip);
+ehat_3 = y(filter_skip:end) - yhat_k;
+
+mean(ehat_3)
