@@ -26,9 +26,9 @@ title("thx")
 close all
 lambdas = [1 0.95 0.9];
 
-plot = 1;
+plot_results = 1;
 
-if plot
+if plot_results
     figure
 end
 
@@ -45,7 +45,7 @@ for i = 1:length(lambdas)
         [Aest(kk, :), yhat(kk)] = step(X, tar2(kk));
     end
 
-    if plot
+    if plot_results
         subplot(1, length(lambdas), i)
         plot(Aest)
         title(sprintf("lambda = %f", lambdas(i)))
