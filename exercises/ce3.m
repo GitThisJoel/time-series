@@ -98,14 +98,63 @@ for kk = 1:N
 end
 
 figure
-plot(Aest(:,2:3));
+plot(Aest(:, 2:3));
 title(sprintf("lambda = %f", opt_lambda))
 hold on
 plot(thx);
 legend("est1", "est2", "thx1", "thx2", "Location", "southeast")
 
-disp("Estimated coeffs = " + Aest(end,2) + "   " + Aest(end,3));
+disp("Estimated coeffs = " + Aest(end, 2) + "   " + Aest(end, 3));
 % Aest(end) =  1.0000    1.4283    0.6737
+
+%% 2.2 Kalman filtering
+close all
+
+N = length(tar2);
+y = tar2;
+
+% Define the state space equations.
+A = [1 0; 0 1]; % ?? ar2
+Re = [.004 0; 0 0]; % State covariance matrix
+Rw = 1.25; %          Observation variance
+
+% Set some initial values
+Rxx1 = 10 * eye(2); % Initial state variance
+xtt1 = [0 0]'; %      Initial statevalues
+
+% Vectors to store values in
+Xsave = zeros(2, N); % Stored states
+ehat = zeros(1, N); %  Prediction residual
+yt1 = zeros(1, N); %   One step prediction
+yt2 = zeros(1, N); %   Two step prediction
+
+% The filter use data up to time t−1 to predict value at t,
+% then update using the prediction error. Why do we start
+for t = 3:N
+    Ct = [-y(t - 1) -y(t - 2)]; % C{ t | t-1}
+    yhat(t) = Ct * xtt1; % y{ t | t-1}
+    ehat(t) = y(t) - yhat(t); % et = yt - y{ t | t-1 }
+
+    % Update
+    Ryy = Ct * Rxx1 * Ct' + Rw; % Rˆ{ yy } { t | t-1 }
+    Kt = Rxx1 * Ct' / Ryy; %  Kt
+    xtt = xtt1 + Kt * (ehat(t)); % x{ t | t }
+    Rxx = Rxx1 - Kt * Ryy * Kt'; % R{ xx } { t | t }
+
+    % Predict the next state
+    xtt1 = A * xtt; % x{ t+1 | t }
+    Rxx1 = A * Rxx * A' + Re; % Rˆ{ xx }{ t+1 | t }
+
+    % Store the state vector
+    Xsave(:, t) = xtt;
+end
+
+figure
+plot(Xsave(:, 3:end)')
+hold on
+plot(thx)
+
+disp("sum of square residuals = " + norm(ehat) .^ 2);
 
 %% 2.2 Kalman filtering
 % Example of Kalman filter
