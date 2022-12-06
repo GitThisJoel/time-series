@@ -4,7 +4,7 @@ close all
 addpath("../CourseMaterial/Code/data");
 addpath("../CourseMaterial/Code/functions");
 
-rng(0);
+% rng(0);
 
 %% 2.1 load data
 
@@ -57,13 +57,15 @@ for i = 1:length(lambdas)
 
 end
 
-%% 2.1 choose lambda
+%% 2.1 opt lambda
 close all
 
 n = 100;
 lambda_line = linspace(0.85, 1, n);
 ls2 = zeros(n, 1);
 yhat = zeros(n, 1);
+
+X = recursiveAR(2);
 
 for i = 1:length(lambda_line)
     reset(X);
@@ -83,14 +85,50 @@ opt_lambda = lambda_line(min_ind);
 plot(lambda_line, ls2);
 title("lambda estimate (min = " + opt_lambda + ")")
 
+X = recursiveAR(2);
+X.ForgettingFactor = opt_lambda;
+X.InitialA = [1 0 0];
+
+N = length(tar2);
+Aest = zeros(N, 3);
+yhat = zeros(1, N);
+
+for kk = 1:N
+    [Aest(kk, :), yhat(kk)] = step(X, tar2(kk));
+end
+
+figure
+plot(Aest(:,2:3));
+title(sprintf("lambda = %f", opt_lambda))
+hold on
+plot(thx);
+legend("est1", "est2", "thx1", "thx2", "Location", "southeast")
+
+disp("Estimated coeffs = " + Aest(end,2) + "   " + Aest(end,3));
+% Aest(end) =  1.0000    1.4283    0.6737
+
 %% 2.2 Kalman filtering
 % Example of Kalman filter
 % Simulate N samples of a process to test your code.
 
-y = ? % Simulated data
+close all
+
+extraN = 100;
+N = 1000;
+A0 = [1 -1.79 0.84];
+C0 = [1];
+e = randn(N + extraN, 1);
+
+% simulate data
+% y = filter(C0, A0, e);
+% y = y(extraN + 1:end);
+% e = e(extraN + 1:end);
+
+N = length(tar2);
+y = tar2;
 
 % Define the state space equations.
-A = [1 0; 0 0]; % ?? ar2
+A = [1 0; 0 1]; % ?? ar2
 Re = [.004 0; 0 0]; % State covariance matrix
 Rw = 1.25; %          Observation variance
 
@@ -104,30 +142,37 @@ ehat = zeros(1, N); %  Prediction residual
 yt1 = zeros(1, N); %   One step prediction
 yt2 = zeros(1, N); %   Two step prediction
 
-% The filter use data up to time t −1 to predict value at t,
+% The filter use data up to time t−1 to predict value at t,
 % then update using the prediction error. Why do we start
 % from t = 3? Why stop at N−2?
 for t = 3:N - 2
-    Ct = [? ?]; % C { t | t-1}
-    yhat(t) = ? % y { t | t-1}
+    Ct = [-y(t - 1) -y(t - 2)]; % C{ t | t-1}
+    yhat(t) = Ct * xtt1; % y{ t | t-1}
     ehat(t) = y(t) - yhat(t); % et = yt - y{ t | t-1 }
 
     % Update
-    Ryy = Rxx1 + eye(2); % Rˆ{ yy } { t | t-1 }
-    Kt = ? %  Kt
-    xtt = ? % x{ t | t }
-    Rxx = ? % R{ xx } { t | t }
+    Ryy = Ct * Rxx1 * Ct' + Rw; % Rˆ{ yy } { t | t-1 }
+    Kt = Rxx1 * Ct' / Ryy; %  Kt
+    xtt = xtt1 + Kt * (ehat(t)); % x{ t | t }
+    Rxx = Rxx1 - Kt * Ryy * Kt'; % R{ xx } { t | t }
 
     % Predict the next state
-    xtt1 = ? % x{ t+1 | t }
+    xtt1 = A * xtt; % x{ t+1 | t }
     Rxx1 = A * Rxx * A' + Re; % Rˆ{ xx }{ t+1 | t }
 
     % Form 2− step prediction. Ignore this part at first.
-    Ct1 = [? ?]; %   C{ t+1 | t }
-    yt1(t + 1) = ? % y{ t+1 | t } = C{ t+1 | t } x{ t | t }
-    Ct2 = [? ?]; %   C{ t+2 | t }
-    yt2(t + 2) = ? % y{ t+2 | t } = C{ t+2 | t } x{ t | t }
+    % Ct1 = [? ?]; %   C{ t+1 | t }
+    % yt1(t + 1) = ? % y{ t+1 | t } = C{ t+1 | t } x{ t | t }
+    % Ct2 = [? ?]; %   C{ t+2 | t }
+    % yt2(t + 2) = ? % y{ t+2 | t } = C{ t+2 | t } x{ t | t }
 
     % Store the state vector
     Xsave(:, t) = xtt;
 end
+
+figure
+plot(Xsave(:, 3:N - 2)')
+hold on
+plot(thx)
+
+disp("sum of square residuals = " + norm(ehat) .^ 2);
