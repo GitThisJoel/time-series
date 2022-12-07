@@ -199,10 +199,10 @@ for t = 3:N - 2
     ehat(t) = y(t) - yhat(t); % et = yt - y{ t | t-1 }
 
     % Update
-    Ryy = Ct * Rxx1 * Ct' + Rw; % Rˆ{ yy } { t | t-1 }
+    Ryy = Ct * Rxx1 * Ct' + Rw; % Rˆ{ yy }{ t | t-1 }
     Kt = Rxx1 * Ct' / Ryy; %  Kt
     xtt = xtt1 + Kt * (ehat(t)); % x{ t | t }
-    Rxx = Rxx1 - Kt * Ryy * Kt'; % R{ xx } { t | t }
+    Rxx = Rxx1 - Kt * Ryy * Kt'; % R{ xx }{ t | t }
 
     % Predict the next state
     xtt1 = A * xtt; % x{ t+1 | t }
@@ -228,3 +228,12 @@ legend('y', 'k = 1', 'k = 2')
 
 err_resid = norm(ehat(end - 200:end)) .^ 2
 disp("sum pred residuals = " + err_resid)
+
+%% 2.4 quality control
+
+b = 20;
+vare = 1;
+varv = 4;
+
+P = [7/8 1/8; 1/8 7/8];
+ut = simulate_ut(P, 1000)
