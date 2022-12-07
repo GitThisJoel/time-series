@@ -253,7 +253,6 @@ for t=2:N
     yt(t) = xt(t) + b*ut(t) + vt(t);
 end 
 
- 
 % Define the state space equations.
 A = eye(2); % ?? ar2
 Re = [vare 0; 0 0]; % State covariance matrix
@@ -271,3 +270,47 @@ hold on
 plot(xt(3:end-2))
 yline(b)
 legend("est x", "est b", "real x", "real b")
+
+%% 2.5
+clear 
+close all
+
+load svedala94.mat
+
+T = linspace(datenum(1994,1,1), datenum(1994,12,31), length(svedala94));
+
+S = 6;
+AS = [1 zeros(1, S - 1) -1];
+ydiff = myFilter(AS, 1, svedala94, 2);
+
+figure
+plot(T, svedala94)
+datetick('x')
+hold on
+plot(T(2:end),ydiff)
+
+th = armax(ydiff, [2 2]);
+th_winter = armax(ydiff(1:540), [2 2]);
+th_summer = armax(ydiff(907:1458), [2  2]);
+% 
+% figure
+% plot(th.A, '*')
+% hold on
+% plot(th_summer.A, '*')
+% plot(th_winter.A, '*')
+% legend('th', 'th\_summer', 'th\_winter')
+% 
+% figure
+% plot(th.C, '*')
+% hold on
+% plot(th_summer.C, '.')
+% plot(th_winter.C, '.')
+% legend('th', 'th\_summer', 'th\_winter')
+
+figure
+subplot(1,3,1)
+pzplot(th)
+subplot(1,3,2)
+pzplot(th_summer)
+subplot(1,3,3)
+pzplot(th_winter)
