@@ -1,4 +1,4 @@
-function sim_ut = simulate_ut(P, n):
+function sim_ut = simulate_ut(P, n)
     ch = dtmc(P);
-    sim_ut = simulate(ch, n);
+    sim_ut = simulate(ch, n)-1;
 end

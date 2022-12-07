@@ -230,10 +230,44 @@ err_resid = norm(ehat(end - 200:end)) .^ 2
 disp("sum pred residuals = " + err_resid)
 
 %% 2.4 quality control
+clear 
+close all
+
+N = 500;
 
 b = 20;
 vare = 1;
 varv = 4;
 
 P = [7/8 1/8; 1/8 7/8];
-ut = simulate_ut(P, 1000)
+ut = simulate_ut(P, N);
+et = sqrt(vare)*randn(1,N);
+vt = sqrt(varv)*randn(1,N);
+
+xt = zeros(1,N);
+yt = zeros(1,N);
+
+y(1) = xt(1) + b*ut(1) + vt(1);
+for t=2:N
+    xt(t) = xt(t-1) + et(t);
+    yt(t) = xt(t) + b*ut(t) + vt(t);
+end 
+
+ 
+% Define the state space equations.
+A = eye(2); % ?? ar2
+Re = [vare 0; 0 0]; % State covariance matrix
+Rw = varv; %          Observation variance
+
+% Set some initial values
+Rxx1 = 20*eye(2); % Initial state variance
+xtt1 = [0 0]'; %      Initial statevalues
+
+[xtt, ehat, Xsave] = kalmanfilter(yt, A, eye(2), N, Rw, Re, xtt1, Rxx1, ut);
+
+figure 
+plot(Xsave(:,3:end-2)')
+hold on
+plot(xt(3:end-2))
+yline(b)
+legend("est x", "est b", "real x", "real b")

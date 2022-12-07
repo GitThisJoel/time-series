@@ -270,7 +270,7 @@ B = [0 0 0 0.28 -0.26];
 C = [1];
 
 k = 3;
-% k = 26;
+ k = 26;
 
 [Fk, Gk] = polydiv(C, A, k);
 
@@ -345,6 +345,6 @@ present(model_armax)
 
 %% 2.4 prediction
 close all
-k = 3;
+k = 26;
 var_e = 0.3754;
 k_step_prediction(k, model_armax.A, model_armax.C, y, var_e)
