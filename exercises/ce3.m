@@ -349,3 +349,26 @@ hold off
 % C-coefficients, and especially the c1-coefficient, the difference to the
 % summerprocess is bigger for the recursive process conmpared to the
 % non-rcursive.
+
+%% 2.6
+clear
+close all
+
+load svedala94.mat
+
+y = svedala94(850:1100);
+y = y - mean(y);
+
+
+t = ( 1:length(y) )';
+U = [ sin(2*pi*t/6) cos(2*pi*t/6 ) ] ;
+Z = iddata(y ,U) ;
+model = [ 3 [ 1 1 ] 4 [ 0 0 ] ] ; %[ na [ nb_1 nb_2 ] nc [ nk_1 nk_2 ] ] ;
+
+thx = armax(Z,model);
+
+figure
+plot(y)
+hold on
+plot(U*cell2mat(thx.b)')
+legend('y', 'Seasonal function')
