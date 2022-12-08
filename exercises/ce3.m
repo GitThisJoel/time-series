@@ -314,3 +314,38 @@ subplot(1,3,2)
 pzplot(th_summer)
 subplot(1,3,3)
 pzplot(th_winter)
+
+% part 2.5.3
+X = recursiveARMA([ 2 2 ]);
+X.InitialA = [ 1 th_winter.A( 2:end )];
+X.InitialC = [ 1 th_winter.C( 2:end )];
+X.ForgettingFactor = 0.98;
+for k=1: length ( ydiff )
+[ Aest(k,:) , Cest(k,:) , yhat(k) ] = step( X, ydiff( k ) );
+end
+
+figure
+subplot(3,1,1)
+plot (T, svedala94 ) ;
+datetick( 'x' )
+subplot(3,1,2)
+plot ( Aest ( : , 2:3 ) )
+hold on
+plot( repmat( th_winter.A( 2:end ) , [ length( ydiff ) 1 ] ) , 'g:' );
+plot( repmat( th_summer.A( 2:end ) , [ length( ydiff ) 1 ] ) , 'r:' );
+axis tight
+hold off
+subplot(3,1,3)
+plot ( Cest ( : , 2:3 ) )
+hold on
+plot( repmat( th_winter.C( 2:end ) , [ length( ydiff ) 1 ] ) , 'g:' );
+plot( repmat( th_summer.C( 2:end ) , [ length( ydiff ) 1 ] ) , 'r:' );
+axis tight
+hold off
+
+% The A- coeficients of the recursive process correspond well to the
+% non-recursive process during winter or during summer, while spring and
+% autum is transfer periods between the non-recursive processes. For the
+% C-coefficients, and especially the c1-coefficient, the difference to the
+% summerprocess is bigger for the recursive process conmpared to the
+% non-rcursive.
