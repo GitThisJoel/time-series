@@ -3,6 +3,7 @@ clear all
 
 addpath("../CourseMaterial/Code/data");
 addpath("../CourseMaterial/Code/functions");
+addpath("../exercises");
 
 %% Load data and split it into sets
 
@@ -48,16 +49,21 @@ plot(flow_scav_remill)
 
 time = time/60/60/24;
 figure
-subplot(3,1,1)
+subplot(2,1,1)
 plot(time,halt_konc)
-title('Concentration in final concentarte (y)')
-subplot(3,1,2)
-plot(time, halt_ing_flot)
-title('Concentration of incoming ore (x)')
-subplot(3,1,3)
-plot(time, halt_ing_rep)
-title('Concentration of middle product, (alternative x)')
+title('Grade in final concentarte (y)')
+ylabel('Grade [%]')
+xlim([0 122])
 xlabel('Time [days]')
+%subplot(3,1,2)
+%plot(time, halt_ing_flot)
+%title('Concentration of incoming ore (x)')
+subplot(2,1,2)
+plot(time, halt_ing_rep)
+title('Grade of middle product (x)')
+xlabel('Time [days]')
+ylabel('Grade [%]')
+xlim([0 122])
 
 %% Vi behöver hantera outliers, finns gott om dom...
 % spolvatten verkar vara rätt konstant så går nog bra att bara kvotera in
@@ -69,16 +75,17 @@ xlabel('Time [days]')
 
 %% A. modeling without an external input
 close all
-figure 
-plot(halt_konc)
 
+halt_konc = halt_konc - mean(halt_konc);
 % för att hålla ungefär samma datastorlek som i orginalprojektet bör
 % modeleringsdatat innehålla ca 1700 samples, this corresponds to roughly 7
-% days with our sampling intervall. 
+% days with our sampling intervall. - inte viktigt, gjorde dom lite större
 start = 6800;
-modeling_set = halt_konc(start:start+1700);
-validation_set = halt_konc(start+1701:start+1710+350 );
-test_set = halt_konc(start+length(halt_konc)*0.5:start+length(halt_konc)*0.5+350);
+l_modelling = 2200;
+l_test = 700;
+modeling_set = halt_konc(start:start+l_modelling);
+validation_set = halt_konc(start+l_modelling+1:start+l_modelling+1+l_test );
+test_set = halt_konc(round(start+length(halt_konc)*0.47):round(start+length(halt_konc)*0.47)+l_test);
 
 figure
 plot(modeling_set)
@@ -93,18 +100,35 @@ figure
 plot(halt_konc)
 hold on
 xline(start)
-xline(start+1700)
-xline(start+1700+350)
-xline(start+length(halt_konc)*0.5)
-xline(start+length(halt_konc)*0.5+350)
+xline(start+l_modelling)
+xline(start+l_modelling+l_test)
+xline(start+length(halt_konc)*0.47)
+xline(start+length(halt_konc)*0.47+l_test)
 
 % I think this split looks ok, lets see if the data-size is sufficent
 
 %% Utreda om outliers behöver behandlas
 figure
 acf(modeling_set, 32, 0.05, 1);
-figure
+hold on
 tacf(modeling_set, 32, 0.04, 0.05, 1);
 
 % Relativt lika, testar utan out-lier-behandlign till att börja med
 
+%% Inspect data
+ACFnPACFnNormplot(modeling_set,50);
+
+%% Start with testing an AR(1)
+model_AR2 = estimateARMA(modeling_set, [1 1], [1], 'AR(2) model',50)
+
+%% Test adding an MA(2)-component
+model_ARMA12 = estimateARMA(modeling_set, [1 1], [1 0 1], "ARMA(1,2) model", 50)
+
+%% Test adding an AR(3)-component
+% removed MA(2) again since it became insignificant
+model_ARMA12 = estimateARMA(modeling_set, [1 1 0 1], [1], "ARMA(1,2) model", 50)
+
+%% Test adding an MA(3)-component
+model_ARMA12 = estimateARMA(modeling_set, [1 1 0 1], [1 0 0 1], "ARMA(1,2) model", 50)
+
+%% Det här ser lite läskigt bra ut enligt mig, 
