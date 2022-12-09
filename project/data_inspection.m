@@ -119,16 +119,16 @@ tacf(modeling_set, 32, 0.04, 0.05, 1);
 ACFnPACFnNormplot(modeling_set,50);
 
 %% Start with testing an AR(1)
-model_AR2 = estimateARMA(modeling_set, [1 1], [1], 'AR(2) model',50)
+model_AR1 = estimateARMA(modeling_set, [1 1], [1], 'AR(1) model',50)
 
 %% Test adding an MA(2)-component
 model_ARMA12 = estimateARMA(modeling_set, [1 1], [1 0 1], "ARMA(1,2) model", 50)
 
 %% Test adding an AR(3)-component
 % removed MA(2) again since it became insignificant
-model_ARMA12 = estimateARMA(modeling_set, [1 1 0 1], [1], "ARMA(1,2) model", 50)
+model_AR3 = estimateARMA(modeling_set, [1 1 0 1], [1], "AR(3) model", 50)
 
 %% Test adding an MA(3)-component
-model_ARMA12 = estimateARMA(modeling_set, [1 1 0 1], [1 0 0 1], "ARMA(1,2) model", 50)
+model_ARMA12 = estimateARMA(modeling_set, [1 1 0 1], [1 0 0 1], "ARMA(3,3) model", 50)
 
 %% Det här ser lite läskigt bra ut enligt mig, 
