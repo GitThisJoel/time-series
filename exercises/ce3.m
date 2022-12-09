@@ -319,7 +319,7 @@ pzplot(th_winter)
 X = recursiveARMA([ 2 2 ]);
 X.InitialA = [ 1 th_winter.A( 2:end )];
 X.InitialC = [ 1 th_winter.C( 2:end )];
-X.ForgettingFactor = 0.98;
+X.ForgettingFactor = 0.99;
 for k=1: length ( ydiff )
 [ Aest(k,:) , Cest(k,:) , yhat(k) ] = step( X, ydiff( k ) );
 end
@@ -356,8 +356,11 @@ close all
 
 load svedala94.mat
 
-y = svedala94(850:1100);
-y = y - mean(y);
+%y = svedala94(850:1100);
+%y = y - mean(y);
+y = svedala94;
+y = y -y(1);
+
 
 
 t = ( 1:length(y) )';
@@ -372,3 +375,30 @@ plot(y)
 hold on
 plot(U*cell2mat(thx.b)')
 legend('y', 'Seasonal function')
+
+% Looks like the period matches well, might be more flexible if it is done
+% recursivly
+
+U = [ sin(2*pi*t/6) cos(2*pi*t/6) ones(size(t)) ];
+Z = iddata(y ,U);
+m0 = [ thx.A(2:end) cell2mat(thx.B) 0 thx.C(2:end) ];
+Re = diag ( [ 0 0 0 0 0 1 0 0 0 0 ] );
+model=[3 [1 1 1] 4 0 [0 0 0] [1 1 1] ];
+[ thr , yhat ] = rpem(Z, model, 'kf', Re, m0 );
+
+
+m = thr(:, 6 );
+a = thr(end , 4 );
+b = thr(end , 5 );
+y_mean = m + a*U(:,1)+b*U(:,2);
+y_mean = [ 0 ; y_mean( 1:end-1 ) ] ;
+
+figure
+plot(y)
+hold on
+plot(y_mean)
+legend('y', 'y\_mean')
+
+mse = rms(y-y_mean)
+
+% För hela datasettet diffar det en del i början men följer rätt fint sen
