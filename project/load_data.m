@@ -1,6 +1,6 @@
 function [modeling_set, validation_set, test_set] = load_data(raw_data, start, l_modelling, l_test)
 
-    halt_konc = halt_konc - mean(halt_konc);
+    raw_data = raw_data - mean(raw_data);
 
     if nargin < 2
         start = 6800;
@@ -14,7 +14,7 @@ function [modeling_set, validation_set, test_set] = load_data(raw_data, start, l
         l_test = 700;
     end
 
-    modeling_set = halt_konc(start:start + l_modelling);
-    validation_set = halt_konc(start + l_modelling + 1:start + l_modelling + 1 + l_test);
-    test_set = halt_konc(round(start + length(halt_konc) * 0.47):round(start + length(halt_konc) * 0.47) + l_test);
+    modeling_set = raw_data(start:start + l_modelling);
+    validation_set = raw_data(start + l_modelling + 1:start + l_modelling + 1 + l_test);
+    test_set = raw_data(round(start + length(raw_data) * 0.47):round(start + length(raw_data) * 0.47) + l_test);
 end
