@@ -1,6 +1,5 @@
 function [modeling_set, validation_set, test_set] = load_data(raw_data, start, l_modelling, l_test)
 
-    halt_konc = raw_data(:, 1);
     halt_konc = halt_konc - mean(halt_konc);
 
     if nargin < 2
