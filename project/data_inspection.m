@@ -65,6 +65,8 @@ xlabel('Time [days]')
 ylabel('Grade [%]')
 xlim([0 122])
 
+%%
+
 %% Vi behöver hantera outliers, finns gott om dom...
 % spolvatten verkar vara rätt konstant så går nog bra att bara kvotera in
 % om vi behöver det, annars kanske försumbart
@@ -107,28 +109,34 @@ xline(start+length(halt_konc)*0.47+l_test)
 
 % I think this split looks ok, lets see if the data-size is sufficent
 
-%% Utreda om outliers behöver behandlas
+%% Naive predictors:
+
+% A suitable naive predictor for the one step rediction is the current
+% value of the grade.
+
+% For the 9-step prediction, which corresponds to the prediction almost an
+% hour from now (how about doing 10 step since that is an hour?), the mean
+% value for the last 4 hours is a suitable naive predictor.
+
+halt_mean = movmean(halt_konc, [40 0]);
+
 figure
-acf(modeling_set, 32, 0.05, 1);
+plot(halt_konc)
 hold on
-tacf(modeling_set, 32, 0.04, 0.05, 1);
+plot(halt_mean)
+legend('halt', 'mean')
 
-% Relativt lika, testar utan out-lier-behandlign till att börja med
 
-%% Inspect data
-ACFnPACFnNormplot(modeling_set,50);
+%% Calculate the variance of the naive predictors prediction errors
 
-%% Start with testing an AR(1)
-model_AR1 = estimateARMA(modeling_set, [1 1], [1], 'AR(1) model',50)
+%The indecies of the testset in the real dataset
+ind = [round(start+length(halt_konc)*0.47) round(start+length(halt_konc)*0.47)+l_test];
 
-%% Test adding an MA(2)-component
-model_ARMA12 = estimateARMA(modeling_set, [1 1], [1 0 1], "ARMA(1,2) model", 50)
+% one step:
+res_one_step = halt_konc(2:end)-halt_konc(1:end-1);
 
-%% Test adding an AR(3)-component
-% removed MA(2) again since it became insignificant
-model_AR3 = estimateARMA(modeling_set, [1 1 0 1], [1], "AR(3) model", 50)
+ACFnPACFnNormplot(res_one_step,50);
+% Looks very white
 
-%% Test adding an MA(3)-component
-model_ARMA12 = estimateARMA(modeling_set, [1 1 0 1], [1 0 0 1], "ARMA(3,3) model", 50)
+% extract part corresponding to the test set: (one step lag in the res-vector)
 
-%% Det här ser lite läskigt bra ut enligt mig, 

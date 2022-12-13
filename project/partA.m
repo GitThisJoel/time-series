@@ -9,14 +9,14 @@ load('raw_data.mat')
 halt_konc = raw_data(:, 1);
 [modeling_set, validation_set, test_set] = load_data(halt_konc);
 
-%%
-%% Vi behöver hantera outliers, finns gott om dom...
+%% Någr observationer om datan
 % spolvatten verkar vara rätt konstant så går nog bra att bara kvotera in
-% om vi behöver det, annars kanske försumbart
+% om vi behöver det, men är sannorlikt försumbart då mätningarna är på % av
+% fast material
 
 % De signaler vi kommer jobba med är halten i koncentratet "halt_konc" och
-% som insignal kommer vi sedan att använda "halt_ing_rep" och eventuellt 
-% "flow_ing_rep" som insignaler.
+% som insignal kommer vi sedan att använda "halt_ing_rep" (och eventuellt 
+% "flow_ing_rep", men sanorlikt inte) som insignaler.
 
 %% A. modeling without an external input
 
@@ -37,10 +37,15 @@ figure
 normplot( modeling_set )
 
 % Har högt lambda redan vid 0, men ännu högre vid 2, väljer att inte göra
-% någon transform till att börja med.
+% någon transform till att börja med, men kanske eventuellt testar att 
+% logga sen.
 
 %% Inspect data
 ACFnPACFnNormplot(modeling_set,50);
+
+% Tar Lång tid innan ACF:en klingar av, men differentierar man datat så
+% blir det ingen struktur kvar, så undvikaer att göra det och testar att
+% modelera istället då AR(1)-komponenten är mycket tydlig
 
 %% Log(data) and inspect again
 
