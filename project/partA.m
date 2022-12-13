@@ -22,8 +22,9 @@ halt_konc = raw_data(:, 1);
 
 %% Utreda om outliers behöver behandlas
 figure
+subplot(1,2,1)
 acf(modeling_set, 32, 0.05, 1);
-figure
+subplot(1,2,2)
 tacf(modeling_set, 32, 0.04, 0.05, 1);
 
 % Relativt lika, testar utan out-lier-behandlign till att börja med
@@ -53,7 +54,9 @@ modeling_set_mod = modeling_set + 15;
 min(modeling_set_mod)
 modeling_set_mod = log(modeling_set_mod);
 
-ACFnPACFnNormplot(modeling_set_mod, 50)
+ACFnPACFnNormplot(modeling_set_mod, 50);
+figure
+normplot(modeling_set_mod)
 
 % Logga datat gör det något bättre i hur fort ACF:en klingar av, men inte
 % jättemycket så testar utan transform till att börja med
@@ -70,18 +73,27 @@ ACFnPACFnNormplot(modeling_set_mod, 50)
 % differentiering verkar inte vara lämpligt
 
 %% Start with testing an AR(1)
-model_AR1 = estimateARMA(modeling_set, [1 1], [1], 'AR(1) model',50)
+[model_AR1, res_model_AR1] = estimateARMA(modeling_set, [1 1], [1], 'AR(1) model',50);
 present(model_AR1)
+checkIfWhite(res_model_AR1);
 %% Test adding an MA(2)-component
-model_ARMA12 = estimateARMA(modeling_set, [1 1], [1 0 1], "ARMA(1,2) model", 50)
-
+[model_ARMA12, res_model_ARMA12] = estimateARMA(modeling_set, [1 1], [1 0 1], "ARMA(1,2) model", 50);
+checkIfWhite(res_model_ARMA12);
 %% Test adding an AR(3)-component
 % removed MA(2) again since it became insignificant
-model_AR3 = estimateARMA(modeling_set, [1 1 0 1], [1], "AR(3) model", 50)
-
+[ model_AR3, res_model_AR3] = estimateARMA(modeling_set, [1 1 0 1], [1], "AR(3) model", 50);
+checkIfWhite(res_model_AR3);
+checkIfNormal(res_model_AR3, '');
+% Den här är väldigt nära att vara vit
 %% Test adding an MA(3)-component
-model_ARMA33 = estimateARMA(modeling_set, [1 1 0 1], [1 0 0 1], "ARMA(3,3) model", 50)
+[model_ARMA33, res_model_ARMA33] = estimateARMA(modeling_set, [1 1 0 1], [1 0 0 1], "ARMA(3,3) model", 50);
 present(model_ARMA33)
+checkIfWhite(res_model_ARMA33);
+checkIfNormal(res_model_ARMA33, '');
 % den här modellen tar bort alla låga signifikanta parametrar, utvärdera
 % den vidare, jämför med vanlig AR(1), hur mycket vinner man på den högre
-% ordningen?.. (alla parametrar är signifikanta)
+% ordningen?.. (alla parametrar är signifikanta), residualen är vit men
+% inte normalfördelad, ser mer t-fördelad ut.
+
+
+%% Gör predictions med modellen!
