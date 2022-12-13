@@ -133,13 +133,15 @@ legend('halt', 'mean')
 ind_validation = [start+l_modelling+1 start+l_modelling+1+l_test];
 ind_test = [round(start+length(halt_konc)*0.47) round(start+length(halt_konc)*0.47)+l_test];
 
-% one step: (sätter in 0 för att behålla felen på rätt index)
+%% one step: (sätter in 0 för att behålla felen på rätt index)
 res_one_step = [0 ; halt_konc(2:end)-halt_konc(1:end-1)];
 
 % bara för att jag är nyfiken:
 ACFnPACFnNormplot(res_one_step,50);
 checkIfWhite(res_one_step)
 
+figure
+plot(res_one_step)
 
 % extract part corresponding to the validation set: 
 res_validation_naive_1step = res_one_step(ind_validation(1):ind_validation(2));
@@ -148,3 +150,21 @@ var_validation_naive_1step = var(res_validation_naive_1step)
 % extract part correspinding to the test set:
 res_test_naive_1step = res_one_step(ind_test(1):ind_test(2));
 var_test_naive_1step = var(res_test_naive_1step)
+
+%% 9-step: (sätter in 0 för att behålla felen på rätt index)
+res_nine_step = [zeros(9,1) ; halt_konc(10:end)-halt_mean(1:end-9)];
+
+% bara för att jag är nyfiken:
+ACFnPACFnNormplot(res_nine_step,50);
+checkIfWhite(res_nine_step)
+
+figure
+plot(res_nine_step)
+
+% extract part corresponding to the validation set: 
+res_validation_naive_9step = res_nine_step(ind_validation(1):ind_validation(2));
+var_validation_naive_9step = var(res_validation_naive_9step)
+
+% extract part correspinding to the test set:
+res_test_naive_9step = res_nine_step(ind_test(1):ind_test(2));
+var_test_naive_9step = var(res_test_naive_9step)
