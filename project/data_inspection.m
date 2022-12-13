@@ -121,22 +121,30 @@ xline(start+length(halt_konc)*0.47+l_test)
 halt_mean = movmean(halt_konc, [40 0]);
 
 figure
-plot(halt_konc)
+plot(time, halt_konc)
 hold on
-plot(halt_mean)
+plot(time, halt_mean)
 legend('halt', 'mean')
 
 
 %% Calculate the variance of the naive predictors prediction errors
 
 %The indecies of the testset in the real dataset
-ind = [round(start+length(halt_konc)*0.47) round(start+length(halt_konc)*0.47)+l_test];
+ind_validation = [start+l_modelling+1 start+l_modelling+1+l_test];
+ind_test = [round(start+length(halt_konc)*0.47) round(start+length(halt_konc)*0.47)+l_test];
 
-% one step:
-res_one_step = halt_konc(2:end)-halt_konc(1:end-1);
+% one step: (sätter in 0 för att behålla felen på rätt index)
+res_one_step = [0 ; halt_konc(2:end)-halt_konc(1:end-1)];
 
+% bara för att jag är nyfiken:
 ACFnPACFnNormplot(res_one_step,50);
-% Looks very white
+checkIfWhite(res_one_step)
 
-% extract part corresponding to the test set: (one step lag in the res-vector)
 
+% extract part corresponding to the validation set: 
+res_validation_naive_1step = res_one_step(ind_validation(1):ind_validation(2));
+var_validation_naive_1step = var(res_validation_naive_1step)
+
+% extract part correspinding to the test set:
+res_test_naive_1step = res_one_step(ind_test(1):ind_test(2));
+var_test_naive_1step = var(res_test_naive_1step)
