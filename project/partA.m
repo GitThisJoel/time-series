@@ -4,10 +4,11 @@ clear
 addpath("../CourseMaterial/Code/data");
 addpath("../CourseMaterial/Code/functions");
 addpath("../exercises");
+addpath("functions");
 
 load('raw_data.mat')
 halt_konc = raw_data(:, 1);
-[modeling_set, validation_set, test_set] = load_data(halt_konc);
+[modeling_set, validation_set, test_set, index_validation, index_test] = load_data(halt_konc);
 
 %% Någr observationer om datan
 % spolvatten verkar vara rätt konstant så går nog bra att bara kvotera in
@@ -97,3 +98,43 @@ checkIfNormal(res_model_ARMA33, '');
 
 
 %% Gör predictions med modellen!
+% gör det här på hela datasettet så att vi inte behöver filtrera i början
+% av valideringsdata/testdata
+
+close all
+
+halt_konc = halt_konc - mean(halt_konc);
+
+y = halt_konc;
+model = model_AR1
+C = model.C;
+A = model.A;
+k = 9; %Prediction horizon
+
+[Fk , Gk] = polydiv ( C, A, k ) ;
+
+filter_skip = length(A)
+yhat_k = myFilter(Gk, C, y, filter_skip);
+ehat = y(filter_skip:end) - yhat_k;
+ehat = [zeros(filter_skip-1,1) ; ehat];
+figure
+plot(ehat)
+
+figure
+plot(y)
+hold on
+plot(yhat_k)
+legend('y', 'y\_hat')
+
+validation_ehat = ehat(index_validation(1):index_validation(2));
+test_ehat = ehat(index_test(1):index_test(2));
+
+
+ACFnPACFnNormplot(validation_ehat, 50);
+ACFnPACFnNormplot(test_ehat, 50);
+
+checkIfWhite(validation_ehat);
+var(validation_ehat)
+
+checkIfWhite(test_ehat);
+var(test_ehat)
