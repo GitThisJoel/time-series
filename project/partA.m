@@ -88,6 +88,7 @@ checkIfNormal(res_model_AR3, '');
 % Den här är väldigt nära att vara vit
 %% Test adding an MA(3)-component
 [model_ARMA33, res_model_ARMA33] = estimateARMA(modeling_set, [1 1 0 1], [1 0 0 1], "ARMA(3,3) model", 50);
+ACFnPACFnNormplot(res_model_ARMA33,50)
 present(model_ARMA33)
 checkIfWhite(res_model_ARMA33);
 checkIfNormal(res_model_ARMA33, '');
@@ -106,10 +107,10 @@ close all
 halt_konc = halt_konc - mean(halt_konc);
 
 y = halt_konc;
-model = model_AR1
+model = model_ARMA33
 C = model.C;
 A = model.A;
-k = 9; %Prediction horizon
+k = 1; %Prediction horizon
 
 [Fk , Gk] = polydiv ( C, A, k ) ;
 
