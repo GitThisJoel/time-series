@@ -1,4 +1,4 @@
-function CCF(w_t, eps_t, titleStr, M, n)
+function [cc] = CCF(w_t, eps_t, titleStr, M, n)
 
     if nargin < 5
         n = length(w_t);
@@ -12,8 +12,10 @@ function CCF(w_t, eps_t, titleStr, M, n)
         titleStr = "";
     end
 
+    cc = crosscorr(w_t, eps_t, M);
+
     figure
-    stem(-M:M, crosscorr(w_t, eps_t, M), "b");
+    stem(-M:M, cc, "b");
     title(sprintf('Cross correlation function %s', titleStr)), xlabel('Lag')
     hold on
     plot(-M:M, 2 / sqrt(n) * ones(1, 2 * M + 1), '--')

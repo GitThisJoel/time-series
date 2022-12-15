@@ -12,7 +12,7 @@ function [Mba2, etilde] = create_input_model(d, r, s, x, y)
     Mba2 = pem(z, Mi); present(Mba2)
     etilde = resid(Mba2, z);
 
-    checkIfNormal(etilde.y, ""); % close
+    checkIfNormal(etilde.y, ""); close
     checkIfWhite(etilde.y);
 
     ACFnPACFnNormplot(etilde.y, 32);
