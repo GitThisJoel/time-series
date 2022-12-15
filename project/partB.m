@@ -60,7 +60,7 @@ s = 1;
 [Mba2, etilde] = create_input_model(d, r, s, x, y);
 
 na = 1;
-nc = 0;
+nc = 3;
 etilde_model = estimateARMA(etilde.y, [1 ones(1, na)], [1 ones(1, nc)], "ar1\_etilde", noLags);
 present(etilde_model)
 
@@ -77,7 +77,7 @@ ehat = resid(MboxJ, z);
 
 ACFnPACFnNormplot(ehat.y, 32);
 
-checkIfNormal(ehat.y, '');
+checkIfNormal(ehat.y, ''); close
 checkIfWhite(ehat.y);
 
 CCF(x, ehat.y, 'x vs ehat');
