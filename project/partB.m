@@ -38,6 +38,7 @@ close all
 % plot_crosscorr(x, y, noLags);
 CCF(x, y, "", noLags);
 
+
 %% pre white
 
 close all
@@ -51,7 +52,7 @@ present(input_model)
 cc = CCF(w_t, eps_t, "", noLags);
 
 %% choose model order
-close all 
+close all
 
 r = 2;
 [~, d] = max(cc); d = d - noLags - 1;
@@ -61,7 +62,8 @@ s = 1;
 
 na = 1;
 nc = 3;
-etilde_model = estimateARMA(etilde.y, [1 ones(1, na)], [1 ones(1, nc)], "ar1\_etilde", noLags);
+% etilde_model = estimateARMA(etilde.y, [1 ones(1, na)], [1 ones(1, nc)], "ar1\_etilde", noLags);
+etilde_model = estimateARMA(etilde.y, [1 1], [1 0 0 1], "ar1\_etilde", noLags);
 present(etilde_model)
 
 % %% entire model
