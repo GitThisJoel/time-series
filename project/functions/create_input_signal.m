@@ -28,11 +28,4 @@ function [halt_ing_rep] = create_input_signal(raw_data)
 
     halt_ing_rep = (halt_raw_konc .* flow_raw_remill + halt_scav_konc .* flow_scav_remill) ./ flow_ing_rep;
 
-    % a = sum(isnan(halt_raw_konc)) % many nans
-    % b = sum(isnan(flow_raw_remill))
-    % c = sum(isnan(halt_scav_konc)) % many nans
-    % d = sum(isnan(flow_scav_remill))
-    % e = sum(isnan(flow_ing_rep))
-    f = sum(isnan(halt_ing_rep))
-    % [a b c d e f]
 end

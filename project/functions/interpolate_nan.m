@@ -3,7 +3,7 @@ function [data] = interpolate_nan(data)
     if isnan(data(1))
         i = 2;
 
-        while not isnan(data(i))
+        while ~isnan(data(i))
             i = i + 1;
         end
 

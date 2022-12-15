@@ -11,7 +11,8 @@ function [flow] = fliter_flow(flow)
         end
 
         flow(1) = flow(i);
-    elseif errs(end)
+    end 
+    if errs(end)
         i = length(flow) - 1;
 
         while errs(i)
