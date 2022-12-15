@@ -35,19 +35,49 @@ ACFnPACFnNormplot(x, noLags);
 %% cross correlation between input and output data
 
 close all
-plot_crosscorr(x, y, noLags);
+% plot_crosscorr(x, y, noLags);
+CCF(x, y, "", noLags);
 
 %% pre white
+
 close all
 
-input_model = estimateARMA(x, [1 1 1 1], [1 0 1 1 zeros(1, 7) 1], "ARMA(3,11) of input", noLags);
-% input_model = estimateARMA(x, [1 1 1 1], [1 0 1 1], "ARMA(3,3) of input", noLags);
-present(input_model)
-% ACFnPACFnNormplot(ex, noLags);
-
-S = 13; % from looking at estimated arma of x
-AS = [1 zeros(1, S - 1) -1];
-xdiff = myFilter(AS, 1, x, 2);
-ACFnPACFnNormplot(xdiff, noLags);
+% input_model = estimateARMA(x, [1 1 1 1], [1 0 1 1 zeros(1, 7) 1], "ARMA(3,11) of input", noLags);
 input_model = estimateARMA(x, [1 1 1 1], [1 0 1 1], "ARMA(3,3) of input", noLags);
 present(input_model)
+
+% tried diff, did not help.
+[w_t, eps_t] = pre_white(input_model, x, y);
+cc = CCF(w_t, eps_t, "", noLags);
+
+%% choose model order
+close all 
+
+r = 2;
+[~, d] = max(cc); d = d - noLags - 1;
+s = 1;
+
+[Mba2, etilde] = create_input_model(d, r, s, x, y);
+
+na = 1;
+nc = 0;
+etilde_model = estimateARMA(etilde.y, [1 ones(1, na)], [1 ones(1, nc)], "ar1\_etilde", noLags);
+present(etilde_model)
+
+% %% entire model
+A1 = [1 zeros(1, etilde_model.na)];
+A2 = [1 zeros(1, Mba2.nf)];
+B = [zeros(1, Mba2.nk) ones(1, Mba2.nb)];
+C = [1 zeros(1, etilde_model.nc)]; % ones or zeros here?
+Mi = idpoly(1, B, C, A1, A2);
+z = iddata (y, x);
+MboxJ = pem(z, Mi);
+present(MboxJ)
+ehat = resid(MboxJ, z);
+
+ACFnPACFnNormplot(ehat.y, 32);
+
+checkIfNormal(ehat.y, '');
+checkIfWhite(ehat.y);
+
+CCF(x, ehat.y, 'x vs ehat');
