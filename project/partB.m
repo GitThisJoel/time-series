@@ -43,12 +43,11 @@ close all
 % plot_crosscorr(x, y, noLags);
 CCF(x, y, "", noLags);
 
-
 %% pre white
 
 close all
 
-[input_model, input_model_res ] = estimateARMA(x, [1 1 1 1], [1 0 1 1 zeros(1, 7) 1], "ARMA(3,11) of input", noLags);
+[input_model, input_model_res] = estimateARMA(x, [1 1 1 1], [1 0 1 1 zeros(1, 7) 1], "ARMA(3,11) of input", noLags);
 %[input_model, input_model_res ] = estimateARMA(x, [1 1 1 1], [1 0 1 1], "ARMA(3,3) of input", noLags);
 present(input_model)
 checkIfWhite(input_model_res);
@@ -66,21 +65,20 @@ s = 2;
 
 [Mba2, etilde] = create_input_model(d, r, s, x, y);
 
-
-ACFnPACFnNormplot(etilde.OutputData,noLags)
+ACFnPACFnNormplot(etilde.OutputData, noLags)
 na = 1;
 nc = 3;
 % etilde_model = estimateARMA(etilde.y, [1 ones(1, na)], [1 ones(1, nc)], "ar1\_etilde", noLags);
 etilde_model = estimateARMA(etilde.y, [1 1], [1 0 1 1], "ar1\_etilde", noLags);
 present(etilde_model)
 
- %% entire model
+%% entire model
 A1 = [1 zeros(1, etilde_model.na)];
 A2 = [1 zeros(1, Mba2.nf)];
 B = [zeros(1, Mba2.nk) ones(1, Mba2.nb)];
 C = [1 zeros(1, etilde_model.nc)]; % ones or zeros here?
 Mi = idpoly(1, B, C, A1, A2);
-z = iddata (y, x);
+z = iddata(y, x);
 MboxJ = pem(z, Mi);
 present(MboxJ)
 ehat = resid(MboxJ, z);
@@ -96,9 +94,9 @@ present(MboxJ)
 modelB = MboxJ;
 %save('model_part_B.mat','modelB')
 %% Do predictions with model:
-k = 9;  % prediction horizon
+k = 9; % prediction horizon
 % The data we do the predictions on:
 % x = [x ; inp_validation_set];
 % y = [y ; validation_set];
 
-[yhat, ehaty, ehatx] = k_step_prediction_with_input(input_model, MboxJ, k, x,y, noLags);
+[yhat, ehaty, ehatx] = k_step_prediction_with_input(input_model, MboxJ, k, x, y, noLags);
