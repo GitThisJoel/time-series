@@ -1,3 +1,8 @@
+% To do:
+
+% testa fler modellordningar
+% skriv funktion för att utvärdera ressultaten
+
 close all
 clear
 
@@ -43,8 +48,8 @@ CCF(x, y, "", noLags);
 
 close all
 
-%[input_model, input_model_res ] = estimateARMA(x, [1 1 1 1], [1 0 1 1 zeros(1, 7) 1], "ARMA(3,11) of input", noLags);
-[input_model, input_model_res ] = estimateARMA(x, [1 1 1 1], [1 0 1 1], "ARMA(3,3) of input", noLags);
+[input_model, input_model_res ] = estimateARMA(x, [1 1 1 1], [1 0 1 1 zeros(1, 7) 1], "ARMA(3,11) of input", noLags);
+%[input_model, input_model_res ] = estimateARMA(x, [1 1 1 1], [1 0 1 1], "ARMA(3,3) of input", noLags);
 present(input_model)
 checkIfWhite(input_model_res);
 
@@ -57,7 +62,7 @@ close all
 
 r = 1;
 [~, d] = max(cc); d = d - noLags - 1;
-s = 1;
+s = 2;
 
 [Mba2, etilde] = create_input_model(d, r, s, x, y);
 
@@ -88,75 +93,12 @@ checkIfWhite(ehat.y);
 CCF(x, ehat.y, 'x vs ehat');
 
 present(MboxJ)
+modelB = MboxJ;
+%save('model_part_B.mat','modelB')
 %% Do predictions with model:
-k = 1;  % prediction horizon
+k = 9;  % prediction horizon
 % The data we do the predictions on:
 % x = [x ; inp_validation_set];
 % y = [y ; validation_set];
 
-% first predict the input:
-[Fx, Gx] = polydiv( input_model.C, input_model.A, k );
-xhatk = filter(Gx, input_model.C, x);
-
-figure
-plot(x)
-hold on
-plot(xhatk)
-
-
-ehat = x - xhatk;
-ehat = ehat(10:end);
-
-figure
-acf( ehat, noLags, 0.05, 1 );
-title( sprintf('ACF of the %i-step input prediction residual', k) )
-fprintf('This is a %i-step prediction. Ideally, the residual should be an MA(%i) process.\n', k, k-1)
-checkIfWhite( ehat );
-pacfEst = pacf( ehat, noLags, 0.05 );
-checkIfNormal( pacfEst(k+1:end), 'PACF' );
-
-%% predict output
-
-% Form the BJ prediction polynomials. In our notation, these are
-%   A1 = foundModel.D
-%   C1 = foundModel.C
-%   A2 = foundModel.F
-% 
-% The KA, KB, and KC polynomials are formed as:
-%   KA = conv( A1, A2 );
-%   KB = conv( A1, B );
-%   KC = conv( A2, C1 );
-%
-
-foundModel = MboxJ;
-
-KA = conv( foundModel.D, foundModel.F );
-KB = conv( foundModel.D, foundModel.B );
-KC = conv( foundModel.F, foundModel.C );
-
-% Form the ARMA prediction for y_t (note that this is not the same G
-% polynomial as we computed above (that was for x_t, this is for y_t).
-[Fy, Gy] = polydiv( foundModel.C, foundModel.D, k );
-
-% Compute the \hat\hat{F} and \hat\hat{G} polynomials.
-[Fhh, Ghh] = polydiv( conv(Fy, KB), KC, k );
-
-% Form the predicted output signal using the predicted input signal.
-yhatk  = filter(Fhh, 1, xhatk) + filter(Ghh, KC, x) + filter(Gy, KC, y);
-
-%%
-figure
-plot(y)
-hold on
-plot(yhatk)
-
-
-ehat = y - yhatk;
-ehat = ehat(10:end);
-
-figure
-acf( ehat, noLags, 0.05, 1 );
-title( sprintf('ACF of the %i-step output prediction residual', k) )
-checkIfWhite( ehat );
-pacfEst = pacf( ehat, noLags, 0.05 );
-checkIfNormal( pacfEst(k+1:end), 'PACF' );
+[yhat, ehaty, ehatx] = k_step_prediction_with_input(input_model, MboxJ, k, x,y, noLags);
