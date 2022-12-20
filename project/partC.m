@@ -69,12 +69,14 @@ Xsave = zeros(n, N);
 ehat = zeros(1, N);
 yhat = zeros(1, N);
 yt1 = zeros(1, N);
-yt2 = zeros(1, N);
+ytk = zeros(1, N);
 
-k = 1; % k-step predictor
+k = 9; % k-step predictor
 
 %% kalman
 for t = degmax + 1:N - k
+    % find the content of Ct.
+    % fliping the nz-matrices to match the delay.
     Cty = (y(t - degA:t - 1, :) .* flip(nzA(2:end))');
     Ctx = (y(t - degB:t, :) .* flip(nzB)'); % b0 != 1
     Cte = (y(t - degC:t - 1, :) .* flip(nzC(2:end))');
@@ -93,6 +95,40 @@ for t = degmax + 1:N - k
     xtt1 = A * xtt;
     Rxx1 = A * Rxx * A' + Re;
 
+    % Form 1-step and k-step prediction.
+    C1y = (y(t - degA:t - 1, :) .* flip(nzA(2:end))');
+    C1x = (y(t - degB:t, :) .* flip(nzB)'); % b0 != 1
+    C1e = (y(t - degC:t - 1, :) .* flip(nzC(2:end))');
+    C1 = nonzeros([C1y' C1e' C1x'])';
+
+    yk = C1 * xtt;
+    yt1(t) = yk;
+
+    for k0 = 2:k
+        Cky = (y(t - degA + k - 1:t + k - 2, :) .* flip(nzA(2:end))');
+        Ckx = (y(t - degB + k - 1:t + k - 1, :) .* flip(nzB)'); % b0 != 1
+        Cke = (y(t - degC + k - 1:t + k - 2, :) .* flip(nzC(2:end))');
+        Ck = nonzeros([Cky' Ckx' Cke'])';
+
+        yk = Ck * A ^ k * xtt;
+    end
+
+    ytk(t + k) = yk;
+
     % Store the state vector
     Xsave(:, t) = xtt;
 end
+
+%% evalute the prediction
+close all
+
+figure
+plot(y(end - 100 - k:end - k))
+hold on
+plot(yt1(end - 100 - 1:end - 1), 'g')
+plot(ytk(end - 100:end), 'r')
+hold off
+legend('y', 'k = 1', 'k = 9')
+
+err_resid = norm(ehat(end - 200:end)) .^ 2;
+disp("sum pred residuals = " + err_resid)
