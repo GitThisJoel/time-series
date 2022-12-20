@@ -208,7 +208,7 @@ for t = 3:N - 2
     xtt1 = A * xtt; % x{ t+1 | t }
     Rxx1 = A * Rxx * A' + Re; % Rˆ{ xx }{ t+1 | t }
 
-    % Form 2− step prediction. Ignore this part at first.
+    % Form 2−step prediction. Ignore this part at first.
     Ct1 = [-y(t) -y(t - 1)]; %   C{ t+1 | t }
     yt1(t + 1) = Ct1 * xtt; % y{ t+1 | t } = C{ t+1 | t } x{ t | t }
     Ct2 = [-yt1(t + 1) -y(t)]; %   C{ t+2 | t }
@@ -230,7 +230,7 @@ err_resid = norm(ehat(end - 200:end)) .^ 2
 disp("sum pred residuals = " + err_resid)
 
 %% 2.4 quality control
-clear 
+clear
 close all
 
 N = 500;
@@ -241,17 +241,18 @@ varv = 4;
 
 P = [7/8 1/8; 1/8 7/8];
 ut = simulate_ut(P, N);
-et = sqrt(vare)*randn(1,N);
-vt = sqrt(varv)*randn(1,N);
+et = sqrt(vare) * randn(1, N);
+vt = sqrt(varv) * randn(1, N);
 
-xt = zeros(1,N);
-yt = zeros(1,N);
+xt = zeros(1, N);
+yt = zeros(1, N);
 
-y(1) = xt(1) + b*ut(1) + vt(1);
-for t=2:N
-    xt(t) = xt(t-1) + et(t);
-    yt(t) = xt(t) + b*ut(t) + vt(t);
-end 
+y(1) = xt(1) + b * ut(1) + vt(1);
+
+for t = 2:N
+    xt(t) = xt(t - 1) + et(t);
+    yt(t) = xt(t) + b * ut(t) + vt(t);
+end
 
 % Define the state space equations.
 A = eye(2); % ?? ar2
@@ -259,25 +260,25 @@ Re = [vare 0; 0 0]; % State covariance matrix
 Rw = varv; %          Observation variance
 
 % Set some initial values
-Rxx1 = 20*eye(2); % Initial state variance
+Rxx1 = 20 * eye(2); % Initial state variance
 xtt1 = [0 0]'; %      Initial statevalues
 
 [xtt, ehat, Xsave] = kalmanfilter(yt, A, eye(2), N, Rw, Re, xtt1, Rxx1, ut);
 
-figure 
-plot(Xsave(:,3:end-2)')
+figure
+plot(Xsave(:, 3:end - 2)')
 hold on
-plot(xt(3:end-2))
+plot(xt(3:end - 2))
 yline(b)
 legend("est x", "est b", "real x", "real b")
 
 %% 2.5
-clear 
+clear
 close all
 
 load svedala94.mat
 
-T = linspace(datenum(1994,1,1), datenum(1994,12,31), length(svedala94));
+T = linspace(datenum(1994, 1, 1), datenum(1994, 12, 31), length(svedala94));
 
 S = 6;
 AS = [1 zeros(1, S - 1) -1];
@@ -287,19 +288,19 @@ figure
 plot(T, svedala94)
 datetick('x')
 hold on
-plot(T(2:end),ydiff)
+plot(T(2:end), ydiff)
 
 th = armax(ydiff, [2 2]);
 th_winter = armax(ydiff(1:540), [2 2]);
-th_summer = armax(ydiff(907:1458), [2  2]);
-% 
+th_summer = armax(ydiff(907:1458), [2 2]);
+%
 % figure
 % plot(th.A, '*')
 % hold on
 % plot(th_summer.A, '*')
 % plot(th_winter.A, '*')
 % legend('th', 'th\_summer', 'th\_winter')
-% 
+%
 % figure
 % plot(th.C, '*')
 % hold on
@@ -308,38 +309,39 @@ th_summer = armax(ydiff(907:1458), [2  2]);
 % legend('th', 'th\_summer', 'th\_winter')
 
 figure
-subplot(1,3,1)
+subplot(1, 3, 1)
 pzplot(th)
-subplot(1,3,2)
+subplot(1, 3, 2)
 pzplot(th_summer)
-subplot(1,3,3)
+subplot(1, 3, 3)
 pzplot(th_winter)
 
 % part 2.5.3
-X = recursiveARMA([ 2 2 ]);
-X.InitialA = [ 1 th_winter.A( 2:end )];
-X.InitialC = [ 1 th_winter.C( 2:end )];
+X = recursiveARMA([2 2]);
+X.InitialA = [1 th_winter.A(2:end)];
+X.InitialC = [1 th_winter.C(2:end)];
 X.ForgettingFactor = 0.99;
-for k=1: length ( ydiff )
-[ Aest(k,:) , Cest(k,:) , yhat(k) ] = step( X, ydiff( k ) );
+
+for k = 1:length (ydiff)
+    [Aest(k, :), Cest(k, :), yhat(k)] = step(X, ydiff(k));
 end
 
 figure
-subplot(3,1,1)
-plot (T, svedala94 ) ;
-datetick( 'x' )
-subplot(3,1,2)
-plot ( Aest ( : , 2:3 ) )
+subplot(3, 1, 1)
+plot (T, svedala94);
+datetick('x')
+subplot(3, 1, 2)
+plot (Aest (:, 2:3))
 hold on
-plot( repmat( th_winter.A( 2:end ) , [ length( ydiff ) 1 ] ) , 'g:' );
-plot( repmat( th_summer.A( 2:end ) , [ length( ydiff ) 1 ] ) , 'r:' );
+plot(repmat(th_winter.A(2:end), [length(ydiff) 1]), 'g:');
+plot(repmat(th_summer.A(2:end), [length(ydiff) 1]), 'r:');
 axis tight
 hold off
-subplot(3,1,3)
-plot ( Cest ( : , 2:3 ) )
+subplot(3, 1, 3)
+plot (Cest (:, 2:3))
 hold on
-plot( repmat( th_winter.C( 2:end ) , [ length( ydiff ) 1 ] ) , 'g:' );
-plot( repmat( th_summer.C( 2:end ) , [ length( ydiff ) 1 ] ) , 'r:' );
+plot(repmat(th_winter.C(2:end), [length(ydiff) 1]), 'g:');
+plot(repmat(th_summer.C(2:end), [length(ydiff) 1]), 'r:');
 axis tight
 hold off
 
@@ -361,37 +363,34 @@ load svedala94.mat
 y = svedala94;
 y = y -y(1);
 
+t = (1:length(y))';
+U = [sin(2 * pi * t / 6) cos(2 * pi * t / 6)];
+Z = iddata(y, U);
+model = [3 [1 1] 4 [0 0]]; %[ na [ nb_1 nb_2 ] nc [ nk_1 nk_2 ] ] ;
 
-
-t = ( 1:length(y) )';
-U = [ sin(2*pi*t/6) cos(2*pi*t/6 ) ] ;
-Z = iddata(y ,U) ;
-model = [ 3 [ 1 1 ] 4 [ 0 0 ] ] ; %[ na [ nb_1 nb_2 ] nc [ nk_1 nk_2 ] ] ;
-
-thx = armax(Z,model);
+thx = armax(Z, model);
 
 figure
 plot(y)
 hold on
-plot(U*cell2mat(thx.b)')
+plot(U * cell2mat(thx.b)')
 legend('y', 'Seasonal function')
 
 % Looks like the period matches well, might be more flexible if it is done
 % recursivly
 
-U = [ sin(2*pi*t/6) cos(2*pi*t/6) ones(size(t)) ];
-Z = iddata(y ,U);
-m0 = [ thx.A(2:end) cell2mat(thx.B) 0 thx.C(2:end) ];
-Re = diag ( [ 0 0 0 0 0 1 0 0 0 0 ] );
-model=[3 [1 1 1] 4 0 [0 0 0] [1 1 1] ];
-[ thr , yhat ] = rpem(Z, model, 'kf', Re, m0 );
+U = [sin(2 * pi * t / 6) cos(2 * pi * t / 6) ones(size(t))];
+Z = iddata(y, U);
+m0 = [thx.A(2:end) cell2mat(thx.B) 0 thx.C(2:end)];
+Re = diag ([0 0 0 0 0 1 0 0 0 0]);
+model = [3 [1 1 1] 4 0 [0 0 0] [1 1 1]];
+[thr, yhat] = rpem(Z, model, 'kf', Re, m0);
 
-
-m = thr(:, 6 );
-a = thr(end , 4 );
-b = thr(end , 5 );
-y_mean = m + a*U(:,1)+b*U(:,2);
-y_mean = [ 0 ; y_mean( 1:end-1 ) ] ;
+m = thr(:, 6);
+a = thr(end, 4);
+b = thr(end, 5);
+y_mean = m + a * U(:, 1) + b * U(:, 2);
+y_mean = [0; y_mean(1:end - 1)];
 
 figure
 plot(y)
@@ -399,6 +398,6 @@ hold on
 plot(y_mean)
 legend('y', 'y\_mean')
 
-mse = rms(y-y_mean)
+mse = rms(y - y_mean)
 
 % För hela datasettet diffar det en del i början men följer rätt fint sen
