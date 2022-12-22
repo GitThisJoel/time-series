@@ -65,4 +65,8 @@ checkIfWhite( ehaty );
 pacfEst = pacf( ehaty, noLags, 0.05 );
 checkIfNormal( pacfEst(k+1:end), 'PACF' );
 
+
+%% add zeros to get index-position right for future analysis
+ehatx = [zeros(length(yhatk)-length(ehatx),1);ehatx];
+ehaty = [zeros(length(yhatk)-length(ehaty),1);ehaty];
 end
