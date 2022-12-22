@@ -74,13 +74,14 @@ ytk = zeros(1, N);
 k = 9; % k-step predictor
 
 %% kalman
+
 for t = degmax + 1:N - k
     % find the content of Ct.
     % fliping the nz-matrices to match the delay.
-    Cty = (y(t - degA:t - 1, :) .* flip(nzA(2:end))');
-    Ctx = (y(t - degB:t, :) .* flip(nzB)'); % b0 != 1
-    Cte = (y(t - degC:t - 1, :) .* flip(nzC(2:end))');
-    Ct = nonzeros([Cty' Cte' Ctx'])';
+    Cty = flip(y(t - degA:t - 1, :)' .* flip(nzA(2:end)));
+    Ctx = flip(x(t - degB:t, :)' .* flip(nzB)); % b0 != 1
+    Cte = flip(ehat(:, t - degC:t - 1) .* flip(nzC(2:end)));
+    Ct = [-nonzeros(Cty)' Cte nonzeros(Ctx)'];
 
     yhat(t) = Ct * xtt1;
     ehat(t) = y(t) - yhat(t);
@@ -96,21 +97,24 @@ for t = degmax + 1:N - k
     Rxx1 = A * Rxx * A' + Re;
 
     % Form 1-step and k-step prediction.
-    C1y = (y(t - degA:t - 1, :) .* flip(nzA(2:end))');
-    C1x = (y(t - degB:t, :) .* flip(nzB)'); % b0 != 1
-    C1e = (y(t - degC:t - 1, :) .* flip(nzC(2:end))');
-    C1 = nonzeros([C1y' C1e' C1x'])';
+    yt = y(t - degA + 1:t, :);
+    C1y = flip(yt .* flip(nzA(2:end))');
+    C1x = flip(x(t - degB + 1:t + 1, :) .* flip(nzB)'); % b0 != 1
+    C1e = flip(ehat(:, t - degC + 1:t) .* flip(nzC(2:end))');
+    C1 = [-nonzeros(Cty)' Cte nonzeros(Ctx)'];
 
     yk = C1 * xtt;
     yt1(t) = yk;
+    yt = [yt(2:end) yk];
 
     for k0 = 2:k
-        Cky = (y(t - degA + k - 1:t + k - 2, :) .* flip(nzA(2:end))');
-        Ckx = (y(t - degB + k - 1:t + k - 1, :) .* flip(nzB)'); % b0 != 1
-        Cke = (y(t - degC + k - 1:t + k - 2, :) .* flip(nzC(2:end))');
-        Ck = nonzeros([Cky' Ckx' Cke'])';
+        Cky = flip(yt .* flip(nzA(2:end))');
+        Ckx = flip(x(t - degB + k0:t + k0, :) .* flip(nzB)'); % b0 != 1
+        Cke = flip(ehat(:, t - degC + k0:t + k0 - 1) .* flip(nzC(2:end))');
+        Ck = [-nonzeros(Cty)' Cte nonzeros(Ctx)'];
 
-        yk = Ck * A ^ k * xtt;
+        yk = Ck * A ^ k0 * xtt;
+        yt = [yt(2:end) yk];
     end
 
     ytk(t + k) = yk;
@@ -123,12 +127,15 @@ end
 close all
 
 figure
-plot(y(end - 100 - k:end - k))
-hold on
-plot(yt1(end - 100 - 1:end - 1), 'g')
-plot(ytk(end - 100:end), 'r')
-hold off
-legend('y', 'k = 1', 'k = 9')
+
+if k > 1
+    plot(y(end - 100 - k:end - k))
+    hold on
+    plot(yt1(end - 100 - k + 1:end - k + 1), 'g')
+    plot(ytk(end - 100:end), 'r')
+    hold off
+    legend('y', 'k = 1', sprintf("k = %d", k))
+end
 
 err_resid = norm(ehat(end - 200:end)) .^ 2;
 disp("sum pred residuals = " + err_resid)
