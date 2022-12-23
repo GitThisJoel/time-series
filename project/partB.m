@@ -57,7 +57,7 @@ CCF(x, y, "y vs x", noLags);
 % här, så återgår till det odifferentierade datasettet.
 %% close all
 
-[input_model, input_model_res] = estimateARMA(x, [1 1 1 1], [1 0 1 1 zeros(1, 7) 1], "ARMA(3,11) of input", noLags);
+[input_model, input_model_res] = estimateARMA(x, [1 1 1 1], [1 0 1 0 zeros(1, 7) 1], "ARMA(3,11) of input", noLags);
 %[input_model, input_model_res ] = estimateARMA(x, [1 1 1 1], [1 0 1 1], "ARMA(3,3) of input", noLags);
 present(input_model)
 checkIfWhite(input_model_res);
@@ -125,7 +125,7 @@ present(MboxJ)
 modelB = MboxJ;
 %save('model_part_B.mat','modelB')
 %% Do predictions with model:
-k = 9; % prediction horizon
+k = 1; % prediction horizon
 % The data we do the predictions on:
 x = halt_ing_rep - mean(halt_ing_rep);
 y = halt_konc - mean(halt_konc);
