@@ -37,18 +37,28 @@ title("Output signal")
 
 ACFnPACFnNormplot(x, noLags);
 
+% Ser vad som händer med inputten av att differentiera den
+AS = [1 -1];
+xdiff = filter(AS, 1, x);
+xdiff = xdiff(2:end);
+ACFnPACFnNormplot(xdiff, noLags);
+
 %% cross correlation between input and output data
 
 close all
 % plot_crosscorr(x, y, noLags);
-CCF(x, y, "", noLags);
+CCF(x, y, "y vs x", noLags);
 
 %% pre white
 
-%close all
+% Test with differentiated data:
+%[input_model, input_model_res] = estimateARMA(xdiff, [1 1 1 ], [1 0 1 ], "ARMA(3,11) of input", noLags);
+% har svårt att generera modeller som ens är i närheten av att vara vita
+% här, så återgår till det odifferentierade datasettet.
+%% close all
 
-%[input_model, input_model_res] = estimateARMA(x, [1 1 1 1], [1 0 1 1 zeros(1, 7) 1], "ARMA(3,11) of input", noLags);
-[input_model, input_model_res ] = estimateARMA(x, [1 1 1 1], [1 0 1 1], "ARMA(3,3) of input", noLags);
+[input_model, input_model_res] = estimateARMA(x, [1 1 1 1], [1 0 1 1 zeros(1, 7) 1], "ARMA(3,11) of input", noLags);
+%[input_model, input_model_res ] = estimateARMA(x, [1 1 1 1], [1 0 1 1], "ARMA(3,3) of input", noLags);
 present(input_model)
 checkIfWhite(input_model_res);
 
@@ -60,12 +70,16 @@ cc = CCF(w_t, eps_t, "", noLags);
 % inputmodellen
 % men prediktionene blir inte direkt bättre och får trevligare ACF utan
 % 11:an så kanske kör utan ändå.
+% x-prediktionene får lägre varians med 11-an och y-prediktionen påverkas
+% inte så 11:an får vara med! 
 %% choose model order
 close all
 % r=1, d=3, s=2 funkar men ger insignifikanta parametrar
 r = 1; 
 [~, d] = max(cc); d = d - noLags - 1; % denna behåller vi!
 s = 2;
+
+
 
 [Mba2, etilde] = create_input_model(d, r, s, x, y);
 
@@ -119,6 +133,8 @@ y = halt_konc - mean(halt_konc);
 [yhat, ehaty, ehatx] = k_step_prediction_with_input(input_model, MboxJ, k, x, y, noLags);
 
 % Analyse results:
-evaluate_performance(ehatx, index_validation, index_test);
-evaluate_performance(ehaty, index_validation, index_test);
+varx = evaluate_performance(ehatx, index_validation, index_test);
+vary = evaluate_performance(ehaty, index_validation, index_test);
+
+fprintf('Variance of y is %s, variance of x is %d \n', vary, varx)
 
