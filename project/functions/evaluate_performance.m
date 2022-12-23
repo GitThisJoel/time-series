@@ -9,9 +9,9 @@ ACFnPACFnNormplot(validation_ehat, 50);
 ACFnPACFnNormplot(test_ehat, 50);
 
 checkIfWhite(validation_ehat);
-var(validation_ehat)
+var_validation = var(validation_ehat);
 
 checkIfWhite(test_ehat);
-var(test_ehat)
+var_test = var(test_ehat);
 
 end
