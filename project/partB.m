@@ -57,29 +57,27 @@ CCF(x, y, "y vs x", noLags);
 % här, så återgår till det odifferentierade datasettet.
 %% close all
 
-[input_model, input_model_res] = estimateARMA(x, [1 1 1 1], [1 0 1 0 zeros(1, 7) 1], "ARMA(3,11) of input", noLags);
+[input_model, input_model_res, acfEst, pacfEst] = estimateARMA(x, [1 1 1 1], [1 0 1 1 zeros(1, 7) 1], "ARMA(3,11) of input", noLags);
+%[input_model, input_model_res] = estimateARMA(x, [1 1 1 1], [1 0 1 1 0 0 0 0 0 1 0 1], "ARMA(3,11) of input", noLags);
 %[input_model, input_model_res ] = estimateARMA(x, [1 1 1 1], [1 0 1 1], "ARMA(3,3) of input", noLags);
 present(input_model)
 checkIfWhite(input_model_res);
+ACFnPACFnNormplot(input_model_res, noLags, 0.05, 'input model', 0)
 
-% tried diff, did not help.
+%% tried diff, did not help.
 [w_t, eps_t] = pre_white(input_model, x, y);
 cc = CCF(w_t, eps_t, "", noLags);
 
 % modellen blir såpass mycket bättre att jag behåller 11-komponenten i
 % inputmodellen
-% men prediktionene blir inte direkt bättre och får trevligare ACF utan
-% 11:an så kanske kör utan ändå.
 % x-prediktionene får lägre varians med 11-an och y-prediktionen påverkas
 % inte så 11:an får vara med! 
-%% choose model order
+%% choose model order, här är vi rapportmässigt
 close all
 % r=1, d=3, s=2 funkar men ger insignifikanta parametrar
 r = 1; 
 [~, d] = max(cc); d = d - noLags - 1; % denna behåller vi!
 s = 2;
-
-
 
 [Mba2, etilde] = create_input_model(d, r, s, x, y);
 
@@ -110,7 +108,6 @@ B = [0 0 0 1 1 1 ];
 C = [1 0 1 1];
 z = iddata(y, x);
 MboxJ = estimateBJ(y,x,C,D,B,F,'',50)
-%MboxJ = pem(z, Mi);
 present(MboxJ)
 ehat = resid(MboxJ, z);
 
@@ -127,10 +124,10 @@ modelB = MboxJ;
 %% Do predictions with model:
 k = 1; % prediction horizon
 % The data we do the predictions on:
-x = halt_ing_rep - mean(halt_ing_rep);
-y = halt_konc - mean(halt_konc);
+x_all = halt_ing_rep - mean(halt_ing_rep);
+y_all = halt_konc - mean(halt_konc);
 
-[yhat, ehaty, ehatx] = k_step_prediction_with_input(input_model, MboxJ, k, x, y, noLags);
+[yhat, ehaty, ehatx] = k_step_prediction_with_input(input_model, MboxJ, k, x_all, y_all, noLags, index_validation, index_test);
 
 % Analyse results:
 varx = evaluate_performance(ehatx, index_validation, index_test);
