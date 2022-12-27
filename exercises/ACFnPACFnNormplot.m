@@ -1,8 +1,11 @@
-function [acfEst, pacfEst] = ACFnPACFnNormplot(data, noLags, signLvl, titleStr)
+function [acfEst, pacfEst] = ACFnPACFnNormplot(data, noLags, signLvl, titleStr, includeZeroLag)
     % FUNCTION ACFnPACFnNormplot (data, noLags, signLvl, title)
     %
     % Plot the estimated ACF and PACF as well as norm plot in a single figure.
 
+    if nargin < 5
+        includeZeroLag = 1;
+    end
     if nargin < 4
         titleStr = "";
     end
@@ -13,11 +16,11 @@ function [acfEst, pacfEst] = ACFnPACFnNormplot(data, noLags, signLvl, titleStr)
 
     figure
     subplot(311)
-    acfEst = acf(data, noLags, signLvl, 1);
+    acfEst = acf(data, noLags, signLvl, 1, 0,includeZeroLag);
     title(sprintf("ACF %s", titleStr))
 
     subplot(312)
-    pacfEst = pacf(data, noLags, signLvl, 1);
+    pacfEst = pacf(data, noLags, signLvl, 1, includeZeroLag);
     title(sprintf("PACF %s", titleStr))
 
     subplot(313)
