@@ -1,4 +1,4 @@
-function [yhatk, ehaty, ehatx] = k_step_prediction_with_input(input_model, model, k, x, y, noLags)
+function [yhatk, ehaty, ehatx] = k_step_prediction_with_input(input_model, model, k, x, y, noLags, index_validation, index_test)
 %UNTITLED Summary of this function goes here
 %   Detailed explanation goes here
 % first predict the input:
@@ -6,9 +6,10 @@ function [yhatk, ehaty, ehatx] = k_step_prediction_with_input(input_model, model
 xhatk = filter(Gx, input_model.C, x);
 
 figure
-plot(x)
+plot(x(index_validation(1):index_validation(2)))
 hold on
-plot(xhatk)
+plot(xhatk(index_validation(1):index_validation(2)))
+title(sprintf('inputput %i-step prediction',k))
 
 
 ehatx = x - xhatk;
@@ -50,9 +51,10 @@ yhatk  = filter(Fhh, 1, xhatk) + filter(Ghh, KC, x) + filter(Gy, KC, y);
 
 %%
 figure
-plot(y)
+plot(y(index_validation(1):index_validation(2)))
 hold on
-plot(yhatk)
+plot(yhatk(index_validation(1):index_validation(2)))
+title(sprintf('output %i-step prediction',k))
 
 
 ehaty = y - yhatk;
