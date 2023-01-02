@@ -5,20 +5,24 @@ function [yhatk, ehaty, ehatx] = k_step_prediction_with_input(input_model, model
 [Fx, Gx] = polydiv( input_model.C, input_model.A, k );
 xhatk = filter(Gx, input_model.C, x);
 
+shiftK = round( mean( grpdelay(Gx, 1) ) );    % Compute the average group delay of the filter.
 figure
-plot(x(index_validation(1):index_validation(2)))
+plot(x(index_validation(1):index_validation(2)-shiftK))
 hold on
-plot(xhatk(index_validation(1):index_validation(2)))
+plot(xhatk(index_validation(1)+shiftK+1:index_validation(2)))
 title(sprintf('inputput %i-step prediction',k))
+legend('Real value','Prediction')
+
+
 
 
 ehatx = x - xhatk;
-ehatx = ehatx(10:end);
 
 figure
-acf( ehatx, noLags, 0.05, 1 );
+acf( ehatx(index_validation(1):index_validation(2)), noLags, 0.05, 1 );
 title( sprintf('ACF of the %i-step input prediction residual', k) )
 fprintf('This is a %i-step prediction. Ideally, the residual should be an MA(%i) process.\n', k, k-1)
+ehatx = ehatx(10:end);
 checkIfWhite( ehatx );
 pacfEst = pacf( ehatx, noLags, 0.05 );
 checkIfNormal( pacfEst(k+1:end), 'PACF' );
@@ -50,19 +54,22 @@ KC = conv( model.F, model.C );
 yhatk  = filter(Fhh, 1, xhatk) + filter(Ghh, KC, x) + filter(Gy, KC, y);
 
 %%
+
+shiftK = round( mean( grpdelay(Gy, 1) ) ); 
 figure
-plot(y(index_validation(1):index_validation(2)))
+plot(y(index_validation(1):index_validation(2)-shiftK))
 hold on
-plot(yhatk(index_validation(1):index_validation(2)))
+plot(yhatk(index_validation(1)+1+shiftK:index_validation(2)))
 title(sprintf('output %i-step prediction',k))
+legend('Real value','Prediction')
 
 
 ehaty = y - yhatk;
-ehaty = ehaty(10:end);
 
 figure
-acf( ehaty, noLags, 0.05, 1 );
+acf( ehaty(index_validation(1):index_validation(2)), noLags, 0.05, 1 );
 title( sprintf('ACF of the %i-step output prediction residual', k) )
+ehaty = ehaty(10:end);
 checkIfWhite( ehaty );
 pacfEst = pacf( ehaty, noLags, 0.05 );
 checkIfNormal( pacfEst(k+1:end), 'PACF' );

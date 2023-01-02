@@ -57,7 +57,7 @@ CCF(x, y, "y vs x", noLags);
 % här, så återgår till det odifferentierade datasettet.
 %% close all
 
-[input_model, input_model_res, acfEst, pacfEst] = estimateARMA(x, [1 1 1 1], [1 0 1 1 zeros(1, 7) 1], "ARMA(3,11) of input", noLags);
+[input_model, input_model_res, acfEst, pacfEst] = estimateARMA(x, [1 1 1 1], [1 0 1 0 zeros(1, 7) 1], "ARMA(3,11) of input", noLags);
 %[input_model, input_model_res] = estimateARMA(x, [1 1 1 1], [1 0 1 1 0 0 0 0 0 1 0 1], "ARMA(3,11) of input", noLags);
 %[input_model, input_model_res ] = estimateARMA(x, [1 1 1 1], [1 0 1 1], "ARMA(3,3) of input", noLags);
 present(input_model)
@@ -103,11 +103,11 @@ etilde_model = estimateARMA(etilde.y, [1 1], [1 1 1 1], "ar1\_etilde", noLags);
 
 
 D = [1 1];                          % A1
-F = [1 ];                          % A2
+F = [1];                          % A2
 B = [0 0 0 1 1 1 ];
 C = [1 0 1 1];
 z = iddata(y, x);
-MboxJ = estimateBJ(y,x,C,D,B,F,'',50)
+MboxJ = estimateBJ(y,x,C,D,B,F,'',50);
 present(MboxJ)
 ehat = resid(MboxJ, z);
 

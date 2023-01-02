@@ -5,8 +5,8 @@ validation_ehat = ehat(index_validation(1):index_validation(2));
 test_ehat = ehat(index_test(1):index_test(2));
 
 
-ACFnPACFnNormplot(validation_ehat, 50);
-ACFnPACFnNormplot(test_ehat, 50);
+ACFnPACFnNormplot(validation_ehat, 50, 0.05, 'Validation set',0);
+ACFnPACFnNormplot(test_ehat, 50, 0.05, 'Test set');
 
 checkIfWhite(validation_ehat);
 var_validation = var(validation_ehat);
