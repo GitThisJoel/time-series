@@ -78,7 +78,7 @@ ytk = zeros(1, N);
 
 k = 9; % k-step predictor
 
-% kalman
+%% kalman
 
 for t = degmax + 1:N - k
     % construct the Ct vector.
@@ -121,6 +121,7 @@ for t = degmax + 1:N - k
 end
 
 %% evalute the prediction
+% we should probably update our evaluation here, something more is needed.
 close all
 
 figure
