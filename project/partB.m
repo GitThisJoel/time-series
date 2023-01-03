@@ -62,7 +62,7 @@ CCF(x, y, "y vs x", noLags);
 %[input_model, input_model_res ] = estimateARMA(x, [1 1 1 1], [1 0 1 1], "ARMA(3,3) of input", noLags);
 present(input_model)
 checkIfWhite(input_model_res);
-ACFnPACFnNormplot(input_model_res, noLags, 0.05, 'input model', 0)
+ACFnPACFnNormplot(input_model_res, noLags, 0.05, 'input model', 0);
 
 %% tried diff, did not help.
 [w_t, eps_t] = pre_white(input_model, x, y);
@@ -75,7 +75,7 @@ cc = CCF(w_t, eps_t, "", noLags);
 %% choose model order, här är vi rapportmässigt
 close all
 % r=1, d=3, s=2 funkar men ger insignifikanta parametrar
-r = 1; 
+r = 0; 
 [~, d] = max(cc); d = d - noLags - 1; % denna behåller vi!
 s = 2;
 
@@ -87,14 +87,14 @@ nc = 3;
 % etilde_model = estimateARMA(etilde.y, [1 ones(1, na)], [1 ones(1, nc)], "ar1\_etilde", noLags);
 etilde_model = estimateARMA(etilde.y, [1 1], [1 1 1 1], "ar1\_etilde", noLags);
 %present(etilde_model)
-
+% this combinations give a white residual to the etilde_model
 
 %% entire model
 
 % A1 = [1 zeros(1, etilde_model.na)];                 % D
 % A2 = [1 zeros(1, Mba2.nf)];                         % F
 % B = [zeros(1, Mba2.nk) ones(1, Mba2.nb)];
-% C = [1 zeros(1, etilde_model.nc)]; % ones or zeros here?
+% C = [1 zeros(1, etilde_model.nc)]; 
 % Mi = idpoly(1, B, C, A1, A2);
 % z = iddata(y, x);
 % MboxJ = pem(z, Mi);
@@ -105,13 +105,13 @@ etilde_model = estimateARMA(etilde.y, [1 1], [1 1 1 1], "ar1\_etilde", noLags);
 D = [1 1];                          % A1
 F = [1];                          % A2
 B = [0 0 0 1 1 1 ];
-C = [1 0 1 1];
+C = [1 1 1 1];
 z = iddata(y, x);
 MboxJ = estimateBJ(y,x,C,D,B,F,'',50);
 present(MboxJ)
 ehat = resid(MboxJ, z);
 
-ACFnPACFnNormplot(ehat.y, 32);
+ACFnPACFnNormplot(ehat.y, 50, 0.05, 'ehat', 0);
 
 checkIfNormal(ehat.y, ''); close
 checkIfWhite(ehat.y);
@@ -120,7 +120,7 @@ CCF(x, ehat.y, 'x vs ehat');
 
 present(MboxJ)
 modelB = MboxJ;
-%save('model_part_B.mat','modelB')
+%save('model_part_B_final.mat','modelB')
 %% Do predictions with model:
 k = 1; % prediction horizon
 % The data we do the predictions on:
@@ -130,8 +130,8 @@ y_all = halt_konc - mean(halt_konc);
 [yhat, ehaty, ehatx] = k_step_prediction_with_input(input_model, MboxJ, k, x_all, y_all, noLags, index_validation, index_test);
 
 % Analyse results:
-varx = evaluate_performance(ehatx, index_validation, index_test);
-vary = evaluate_performance(ehaty, index_validation, index_test);
+[varx_val, varx_test] = evaluate_performance(ehatx, index_validation, index_test);
+[vary_val, vary_test] = evaluate_performance(ehaty, index_validation, index_test);
 
-fprintf('Variance of y is %s, variance of x is %d \n', vary, varx)
-
+fprintf('Validation set: Variance of y is %s, variance of x is %d \n', vary_val, varx_val)
+fprintf('Test set: Variance of y is %s, variance of x is %d \n', vary_test, varx_test)
