@@ -1,3 +1,4 @@
+%% setting up data etc.
 close all
 clear
 
@@ -49,16 +50,20 @@ nzA = zeros(size(Ax)); nzA(Ax ~= 0) = 1;
 nzB = zeros(size(Bx)); nzB(Bx ~= 0) = 1;
 nzC = zeros(size(Cx)); nzC(Cx ~= 0) = 1;
 
+indC = sum(nzA) + 1;
+indB = indC + sum(nzC) + 1;
+
 polys = [Ax Bx Cx];
 n = sum(nonzeros(polys) ~= 1);
 
 N = length(y);
 A = eye(n);
 Re = zeros(size(A)); % think about this one...
-Re(1) = 0.04;
-% Re(...) = ... % where does B begin, should there be a value?
-% Re(...) = ... % where does C begin, should there be a value?
-Rw = 1.25;
+
+Re(1) = 0.006;
+Re(indB, indB) = 6e-5; % where does B begin, should there be a value?
+Re(indC, indC) = 2; % where does C begin, should there be a value?
+Rw = 3;
 
 % Initial values
 Rxx1 = 10 * eye(size(A));
@@ -73,15 +78,11 @@ ytk = zeros(1, N);
 
 k = 9; % k-step predictor
 
-%% kalman
+% kalman
 
 for t = degmax + 1:N - k
-    % find the content of Ct.
-    % fliping the nz-matrices to match the delay.
-    Cty = flip(y(t - degA:t - 1, :)' .* flip(nzA(2:end)));
-    Ctx = flip(x(t - degB:t, :)' .* flip(nzB)); % b0 != 1
-    Cte = flip(ehat(:, t - degC:t - 1) .* flip(nzC(2:end)));
-    Ct = [-nonzeros(Cty)' Cte nonzeros(Ctx)'];
+    % construct the Ct vector.
+    Ct = create_ct(t, y, x, ehat, Ax, Bx, Cx, 0);
 
     yhat(t) = Ct * xtt1;
     ehat(t) = y(t) - yhat(t);
@@ -97,21 +98,17 @@ for t = degmax + 1:N - k
     Rxx1 = A * Rxx * A' + Re;
 
     % Form 1-step and k-step prediction.
-    yt = y(t - degA + 1:t, :);
-    C1y = flip(yt .* flip(nzA(2:end))');
-    C1x = flip(x(t - degB + 1:t + 1, :) .* flip(nzB)'); % b0 != 1
-    C1e = flip(ehat(:, t - degC + 1:t) .* flip(nzC(2:end))');
-    C1 = [-nonzeros(Cty)' Cte nonzeros(Ctx)'];
+    C1 = create_ct(t, y, x, ehat, Ax, Bx, Cx, 1);
 
     yk = C1 * xtt;
     yt1(t) = yk;
+
+    yt = y(t - degA + 1:t);
     yt = [yt(2:end) yk];
 
     for k0 = 2:k
-        Cky = flip(yt .* flip(nzA(2:end))');
-        Ckx = flip(x(t - degB + k0:t + k0, :) .* flip(nzB)'); % b0 != 1
-        Cke = flip(ehat(:, t - degC + k0:t + k0 - 1) .* flip(nzC(2:end))');
-        Ck = [-nonzeros(Cty)' Cte nonzeros(Ctx)'];
+        Cky = flip(yt(find(flip(nzA(2:end))')));
+        Ck = create_ct(t, y, x, ehat, Ax, Bx, Cx, k0, Cky);
 
         yk = Ck * A ^ k0 * xtt;
         yt = [yt(2:end) yk];
