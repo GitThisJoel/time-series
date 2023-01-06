@@ -17,8 +17,8 @@ halt_ing_rep = create_input_signal(raw_data);
 
 noLags = 50;
 
-y = modeling_set;
-x = inp_modeling_set;
+y = [modeling_set; validation_set];
+x = [inp_modeling_set; inp_validation_set];
 
 % model from part B
 load('model_part_B_final.mat')
@@ -58,11 +58,11 @@ n = sum(nonzeros(polys) ~= 0)-1;
 
 N = length(y);
 A = eye(n);
-ReA = 0.01;
-ReB = 1;
-ReC = 1;
+ReA = 0.00001;          % delem som beror av tidigare värden på y
+ReB = 0.0001;           % delen som beror av insignalen
+ReC = 0.00001;          % delen som beror av tidigare fel
 Re = diag([ReA, ReB*ones(1,4), 0 ReC*ones(1,3)]); 
-Rw = 0.1;
+Rw = 0.1;               % "mätbrus"
 
 % Initial values
 Rxx1 = 10 * eye(size(A));
@@ -85,7 +85,7 @@ for t = degmax + 1:N - k
     %Ct = [-yhat(t+8) x(t+6) x(t+5) x(t+4) x(t+3) 0 0 0 0];
 %    Ct = [-yhat(t+8) xhat(t+6) xhat(t+5) xhat(t+4) xhat(t+3) 0 0 0 0];
     %Skapa och skatta xhat? hur? eget kalmanfilter?- tror det....
-    Ct = [-y(t) x(t-2) x(t-3) x(t-4) x(t-5) 0 ehat(t) ehat(t-1) ehat(t-2)];
+    Ct = [-y(t-1) x(t-3) x(t-4) x(t-5) x(t-6) 0 ehat(t-1) ehat(t-2) ehat(t-3)];
     yhat(t) = Ct * xtt1; % y{ t | t-1}
     ehat(t) = y(t) - yhat(t); % et = yt - y{ t | t-1 }
     
@@ -115,9 +115,9 @@ close all
 figure
 
 if k > 0
-    plot(y(end - 100 - k:end - k))
+    plot(y) %(end - 100 - k:end - k))
     hold on
-    plot(yhat(end - 100 - k + 1:end - k + 1), 'g')
+    plot(yhat) %(end - 100 - k + 1:end - k + 1), 'g')
     hold off
     legend('y', 'k = 1')
 end
