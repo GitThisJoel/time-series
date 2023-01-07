@@ -13,15 +13,26 @@ function Ct = create_ct(t, y, x, ehat, Ax, Bx, Cx, k0, Cty)
     nzC = zeros(size(Cx)); nzC(Cx ~= 0) = 1;
 
     if nargin < 9
-        yt = y(t - degA + k0:t - 1 + k0)';
-        Cty = flip(yt(find(flip(nzA(2:end)))));
+
+        Cty = [];
+
+        if length(y) ~= 0
+            yt = y(t - degA + k0:t - 1 + k0)';
+            Cty = flip(yt(find(flip(nzA(2:end)))));
+        end
+
     end
 
-    xt = x(t - degB + k0:t + k0)';
+    if length(x) ~= (degB + 1)
+        xt = x(t - degB + k0:t + k0)';
+    else
+        xt = x;
+    end
+
     Ctx = flip(xt(find(flip(nzB)))); % b0 != 1
 
-    et = ehat(t - degC + k0:t - 1 + k0);
-    Cte = flip(et(find(flip(nzC(2:end)))));
+    et = ehat(t - degC + k0:t + k0);
+    Cte = flip(et(find(flip(nzC))));
 
     Ct = [-Cty Cte Ctx];
 end
