@@ -10,7 +10,7 @@ function [var_validation, var_test] = evaluate_performance(ehat, index_validatio
 
     var_test = -1;
 
-    if (length(index_test) ~= 0) || (nargin > 2)
+    if  (nargin > 2)
         test_ehat = ehat(index_test(1):index_test(2));
         ACFnPACFnNormplot(test_ehat, 50, 0.05, 'Test set');
 
