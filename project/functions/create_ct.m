@@ -1,9 +1,8 @@
 function Ct = create_ct(t, y, x, ehat, Ax, Bx, Cx, k0, Cty)
-    %create_ct - Description
+    %create_ct - Calculates the Ct matrix for a kalman filter.
     %
-    % Syntax: Ct = create_ct(y,x,ehat,degA,degB,degC,k0)
-    %
-    % Calculates the Ct matrix for a kalman filter.
+    % Syntax: Ct = create_ct(t,y,x,ehat,Ax,Bx,Cx,k0)
+
     degA = poly_degree(Ax);
     degB = poly_degree(Bx);
     degC = poly_degree(Cx);
