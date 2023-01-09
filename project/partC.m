@@ -107,7 +107,7 @@ A = eye(n);
 ReA = 0.00006;
 ReB = 6e-5; % where does B begin, should there be a value?
 ReC = 0.002; % where does C begin, should there be a value?
-Re = diag([ReA * ones(1, sum(nzA) - 1), 0 ReC * ones(1, sum(nzC) - 1),  ReB * ones(1, sum(nzB))]);
+Re = diag([ReA * ones(1, sum(nzA) - 1), 0 ReC * ones(1, sum(nzC) - 1), ReB * ones(1, sum(nzB))]);
 
 Rw = 3;
 
@@ -122,13 +122,12 @@ yhat = zeros(1, N);
 yt1 = zeros(1, N);
 ytk = zeros(1, N);
 
-
 k = 9; % k-step predictor
 
 %% kalman
 for t = degmax + 1:N - k
     % constructing the input prediction
-    Ct_inp = [-x(t - 1) -x(t - 2) -x(t - 3) ehat_inp(t) ehat_inp(t - 2) ehat_inp(t - 11)];
+    Ct_inp = create_ct_inp(t, x, ehat_inp, Ax_inp, Cx_inp, 0);
 
     xhat(t) = Ct_inp * xtt1_inp;
     ehat_inp(t) = x(t) - xhat(t);
@@ -143,7 +142,9 @@ for t = degmax + 1:N - k
     Rxx1_inp = A_inp * Rxx * A_inp' + Re_inp;
 
     % Form 1-step and k-step prediction.
-    C1_inp = [-x(t) -x(t - 1) -x(t - 2) ehat_inp(t + 1) ehat_inp(t - 1) ehat_inp(t - 10)];
+
+    xt_inp = x(t - degA_inp + 1:t)';
+    create_ct_inp(t, xt_inp, ehat_inp, Ax_inp, Cx_inp, 1);
 
     xk = C1_inp * xtt_inp;
     xt1(t) = xk;
@@ -151,8 +152,9 @@ for t = degmax + 1:N - k
     xt = x(t - degB + 1:t + 1)';
     xt = [xt(2:end) xt1(t)];
 
-    Xsave_inp(:,t)=xtt_inp;
+    Xsave_inp(:, t) = xtt_inp;
     % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
     % output prediction
     % construct the Ct vector.
     Ct = create_ct(t, y, x, ehat, Ax, Bx, Cx, 0);
@@ -181,19 +183,19 @@ for t = degmax + 1:N - k
 
     for k0 = 2:k
         % predict input
-        Ck_inp = [-x(t - 1 + k0) -x(t - 2 + k0) -x(t - 3 + k0) ehat_inp(t + k0) ehat_inp(t - 2 + k0) ehat_inp(t - 11 + k0)];
+        Ck_inp = create_ct(t, y, xt, ehat, Ax, Bx, Cx, k0);
 
         xk = Ck_inp * A_inp ^ k0 * xtt_inp;
         xt = [xt(2:end) xk];
 
-        %predict output
+        % predict output
         Cky = flip(yt(find(flip(nzA(2:end))')));
         Ck = create_ct(t, y, xt, ehat, Ax, Bx, Cx, k0, Cky);
 
         yk = Ck * A ^ k0 * xtt;
         yt = [yt(2:end) yk];
     end
-    
+
     xtk(t + k) = xk;
     ytk(t + k) = yk;
 
@@ -208,16 +210,15 @@ close all
 % input prediction
 figure
 plot(x)
-hold on 
+hold on
 plot(xt1)
 plot(xtk)
 legend('x', 'k = 1', sprintf("k = %d", k))
 title('input prediction')
 
-
 figure
 plot(Xsave_inp')
-legend('1', '2','3','4','5','6')
+legend('1', '2', '3', '4', '5', '6')
 title('parameters for input prediction')
 
 % output prediction
@@ -237,26 +238,25 @@ end
 
 figure
 plot(y)
-hold on 
+hold on
 plot(yt1)
 plot(ytk)
 legend('x', 'k = 1', sprintf("k = %d", k))
 title('input prediction')
-
 
 err_resid = norm(ehat(end - 200:end)) .^ 2;
 disp("sum pred residuals = " + err_resid)
 
 figure
 plot(Xsave')
-legend('1', '2','3','4','5','6', '7', '8','9')
+legend('1', '2', '3', '4', '5', '6', '7', '8', '9')
 title('parameters for output prediction')
 
 % var_x = var(ehat_inp(end-700:end))
 % var_y = var(ehat(end-700:end))
 
-[varx_val] = evaluate_performance(ehat_inp, [N-length(validation_set), N]);
-[vary_val] = evaluate_performance(ehat, [N-length(validation_set), N]);
+[varx_val] = evaluate_performance(ehat_inp, [N - length(validation_set), N]);
+[vary_val] = evaluate_performance(ehat, [N - length(validation_set), N]);
 
 fprintf('Validation set: Variance of y is %s, variance of x is %d \n', vary_val, varx_val)
 %fprintf('Test set: Variance of y is %s, variance of x is %d \n', vary_test, varx_test)
