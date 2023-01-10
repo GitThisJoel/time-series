@@ -17,8 +17,15 @@ halt_ing_rep = create_input_signal(raw_data);
 
 noLags = 50;
 
-y = [modeling_set; validation_set];
-x = [inp_modeling_set; inp_validation_set];
+run_test = 1;
+
+if run_test
+    x = [inp_validation_set; inp_test_set];
+    y = [validation_set; test_set];
+else
+    x = [inp_modeling_set; inp_validation_set];
+    y = [modeling_set; validation_set];
+end
 
 %y = halt_konc;
 %x = halt_ing_rep;
@@ -144,7 +151,7 @@ for t = degmax + 1:N - k
     % Form 1-step and k-step prediction.
 
     xt_inp = x(t - degA_inp + 1:t)';
-    create_ct_inp(t, xt_inp, ehat_inp, Ax_inp, Cx_inp, 1);
+    C1_inp = create_ct_inp(t, xt_inp, ehat_inp, Ax_inp, Cx_inp, 1);
 
     xk = C1_inp * xtt_inp;
     xt1(t) = xk;
@@ -183,7 +190,7 @@ for t = degmax + 1:N - k
 
     for k0 = 2:k
         % predict input
-        Ck_inp = create_ct(t, y, xt, ehat, Ax, Bx, Cx, k0);
+        Ck_inp = create_ct_inp(t, xt_inp, ehat_inp, Ax_inp, Cx_inp, k0);
 
         xk = Ck_inp * A_inp ^ k0 * xtt_inp;
         xt = [xt(2:end) xk];
@@ -225,27 +232,28 @@ title('parameters for input prediction')
 additional_plot_start = 200; % max 2000, min 0
 
 figure
+plot(y(end - additional_plot_start - 100 - k:end - k))
+hold on
+plot(yt1(end - additional_plot_start - 100 - k + 1:end - k + 1), 'g')
+plot(ytk(end - additional_plot_start - 100:end), 'r')
+hold off
+legend('y', 'k = 1', sprintf("k = %d", k))
+title('Output prediction')
 
-if k > 1
-    plot(y(end - additional_plot_start - 100 - k:end - k))
+plot_hist_param = 0;
+
+if plot_hist_param
+    figure
+    plot(y)
     hold on
-    plot(yt1(end - additional_plot_start - 100 - k + 1:end - k + 1), 'g')
-    plot(ytk(end - additional_plot_start - 100:end), 'r')
-    hold off
-    legend('y', 'k = 1', sprintf("k = %d", k))
-    title('Output prediction')
+    plot(yt1)
+    plot(ytk)
+    legend('x', 'k = 1', sprintf("k = %d", k))
+    title('input prediction')
 end
 
-figure
-plot(y)
-hold on
-plot(yt1)
-plot(ytk)
-legend('x', 'k = 1', sprintf("k = %d", k))
-title('input prediction')
-
-err_resid = norm(ehat(end - 200:end)) .^ 2;
-disp("sum pred residuals = " + err_resid)
+% err_resid = norm(ehat(end - 200:end)) .^ 2;
+% disp("sum pred residuals = " + err_resid)
 
 figure
 plot(Xsave')
@@ -254,9 +262,10 @@ title('parameters for output prediction')
 
 % var_x = var(ehat_inp(end-700:end))
 % var_y = var(ehat(end-700:end))
+if ~run_test
+    [varx_val] = evaluate_performance(ehat_inp, [N - length(validation_set), N]);
+    [vary_val] = evaluate_performance(ehat, [N - length(validation_set), N]);
 
-[varx_val] = evaluate_performance(ehat_inp, [N - length(validation_set), N]);
-[vary_val] = evaluate_performance(ehat, [N - length(validation_set), N]);
-
-fprintf('Validation set: Variance of y is %s, variance of x is %d \n', vary_val, varx_val)
-%fprintf('Test set: Variance of y is %s, variance of x is %d \n', vary_test, varx_test)
+    fprintf('Validation set: Variance of y is %s, variance of x is %d \n', vary_val, varx_val)
+    %fprintf('Test set: Variance of y is %s, variance of x is %d \n', vary_test, varx_test)
+end
