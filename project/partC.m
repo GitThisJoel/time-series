@@ -259,9 +259,13 @@ title('parameters for output prediction')
 
 
 % one step prediction
-    [varx_val,varx_test] = evaluate_performance(ehat_inp, index_validation, index_test);
-    [vary_val, vary_test] = evaluate_performance(ehat, index_validation, index_test);
+    ehat_inp_1 = xt1-x;
+    ehat_1 = yt1-y;
 
+    [varx_val,varx_test] = evaluate_performance(ehat_inp_1, index_validation, index_test);
+    [vary_val, vary_test] = evaluate_performance(ehat_1, index_validation, index_test);
+
+    fprintf('one step prediction ')
     fprintf('Validation set: Variance of y is %s, variance of x is %d \n', vary_val, varx_val)
     fprintf('Test set: Variance of y is %s, variance of x is %d \n', vary_test, varx_test)
 
@@ -273,6 +277,7 @@ title('parameters for output prediction')
     [vary_val, vary_test] = evaluate_performance(ehat_9, index_validation, index_test);
 
     fprintf('Validation set: Variance of y is %s, variance of x is %d \n', vary_val, varx_val)
+    fprintf('Test set: Variance of y is %s, variance of x is %d \n', vary_test, varx_test)
 %% Figures to report
 
     figure
@@ -318,3 +323,13 @@ title('parameters for input prediction')
 ylim([-1.2 1.2])
 
 %% ACF av residualerna, är det ens relevant för kalman?!
+figure
+acf(ehat_1(index_validation(1):index_validation(2)), 50,0.05,1);
+figure
+acf(ehat_9(index_validation(1):index_validation(2)), 50,0.05,1);
+
+
+figure
+acf(ehat_inp_1(index_validation(1):index_validation(2)), 50,0.05,1);
+figure
+acf(ehat_inp_9(index_validation(1):index_validation(2)), 50,0.05,1);
