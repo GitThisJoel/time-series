@@ -20,15 +20,12 @@ noLags = 50;
 run_test = 1;
 
 if run_test
-    x = [inp_validation_set; inp_test_set];
-    y = [validation_set; test_set];
+    x = halt_ing_rep;
+    y = halt_konc;
 else
     x = [inp_modeling_set; inp_validation_set];
     y = [modeling_set; validation_set];
 end
-
-%y = halt_konc;
-%x = halt_ing_rep;
 
 % models from part B
 load('model_part_B_final.mat');
@@ -260,12 +257,64 @@ plot(Xsave')
 legend('1', '2', '3', '4', '5', '6', '7', '8', '9')
 title('parameters for output prediction')
 
-% var_x = var(ehat_inp(end-700:end))
-% var_y = var(ehat(end-700:end))
-if ~run_test
-    [varx_val] = evaluate_performance(ehat_inp, [N - length(validation_set), N]);
-    [vary_val] = evaluate_performance(ehat, [N - length(validation_set), N]);
+
+% one step prediction
+    [varx_val,varx_test] = evaluate_performance(ehat_inp, index_validation, index_test);
+    [vary_val, vary_test] = evaluate_performance(ehat, index_validation, index_test);
 
     fprintf('Validation set: Variance of y is %s, variance of x is %d \n', vary_val, varx_val)
-    %fprintf('Test set: Variance of y is %s, variance of x is %d \n', vary_test, varx_test)
-end
+    fprintf('Test set: Variance of y is %s, variance of x is %d \n', vary_test, varx_test)
+
+    %% nine step prediction
+
+    ehat_inp_9 = xtk-x;
+    ehat_9 = ytk-y;
+    [varx_val,varx_test] = evaluate_performance(ehat_inp_9, index_validation, index_test);
+    [vary_val, vary_test] = evaluate_performance(ehat_9, index_validation, index_test);
+
+    fprintf('Validation set: Variance of y is %s, variance of x is %d \n', vary_val, varx_val)
+%% Figures to report
+
+    figure
+    plot(y(index_validation(1)-1:index_validation(2)-1))
+    hold on
+    plot(yt1(index_validation(1):index_validation(2)))
+    legend('Real value','Prediction')
+
+    figure
+    plot(y(index_validation(1)-9:index_validation(2)-9))
+    hold on
+    plot(ytk(index_validation(1):index_validation(2)))
+    legend('Real value','Prediction')
+
+
+
+
+    figure
+    plot(x(index_validation(1)-1:index_validation(2)-1))
+    hold on
+    plot(xt1(index_validation(1):index_validation(2)))
+    legend('Real value','Prediction')
+
+    figure
+    plot(x(index_validation(1)-9:index_validation(2)-9))
+    hold on
+    plot(xtk(index_validation(1):index_validation(2)))
+    legend('Real value','Prediction')
+
+    %% parametrar for validation
+% byt notation i legenderna timm typ a_1, B_1 osv
+
+figure
+plot(Xsave(:,index_validation(1):index_validation(2))')
+legend('1', '2', '3', '4', '5', '6', '7', '8', '9')
+title('parameters for output prediction')
+ylim([-1.2 1.2])
+
+figure
+plot(Xsave_inp(:,index_validation(1):index_validation(2))')
+legend('1', '2', '3', '4', '5', '6')
+title('parameters for input prediction')
+ylim([-1.2 1.2])
+
+%% ACF av residualerna, är det ens relevant för kalman?!
