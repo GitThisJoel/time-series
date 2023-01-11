@@ -151,7 +151,7 @@ for t = degmax + 1:N - k
     C1_inp = create_ct_inp(t, xt_inp, ehat_inp, Ax_inp, Cx_inp, 1);
 
     xk = C1_inp * xtt_inp;
-    xt1(t) = xk;
+    xt1(t + 1) = xk;
 
     xt = x(t - degB + 1:t + 1)';
     xt = [xt(2:end) xt1(t)];
@@ -180,7 +180,7 @@ for t = degmax + 1:N - k
     C1 = create_ct(t, y, xt, ehat, Ax, Bx, Cx, 1);
 
     yk = C1 * xtt;
-    yt1(t) = yk;
+    yt1(t + 1) = yk;
 
     yt = y(t - degA + 1:t + 1)';
     yt = [yt(2:end) yk];
@@ -194,7 +194,7 @@ for t = degmax + 1:N - k
 
         % predict output
         Cky = flip(yt(find(flip(nzA(2:end))')));
-        Ck = create_ct(t, y, xt, ehat, Ax, Bx, Cx, k0, Cky);
+        Ck = create_ct(t, yt, xt, ehat, Ax, Bx, Cx, k0, Cky);
 
         yk = Ck * A ^ k0 * xtt;
         yt = [yt(2:end) yk];
@@ -226,7 +226,7 @@ legend('1', '2', '3', '4', '5', '6')
 title('parameters for input prediction')
 
 % output prediction
-additional_plot_start = 200; % max 2000, min 0
+additional_plot_start = 500; % max 2000, min 0
 
 figure
 plot(y(end - additional_plot_start - 100 - k:end - k))
@@ -257,79 +257,79 @@ plot(Xsave')
 legend('1', '2', '3', '4', '5', '6', '7', '8', '9')
 title('parameters for output prediction')
 
-
 % one step prediction
-    ehat_inp_1 = xt1-x;
-    ehat_1 = yt1-y;
+ehat_inp_1 = xt1 - x;
+ehat_1 = yt1 - y;
 
-    [varx_val,varx_test] = evaluate_performance(ehat_inp_1, index_validation, index_test);
-    [vary_val, vary_test] = evaluate_performance(ehat_1, index_validation, index_test);
+[varx_val, varx_test] = evaluate_performance(ehat_inp_1, index_validation, index_test);
+[vary_val, vary_test] = evaluate_performance(ehat_1, index_validation, index_test);
 
-    fprintf('one step prediction ')
-    fprintf('Validation set: Variance of y is %s, variance of x is %d \n', vary_val, varx_val)
-    fprintf('Test set: Variance of y is %s, variance of x is %d \n', vary_test, varx_test)
+fprintf('one step prediction ')
+fprintf('Validation set: Variance of y is %s, variance of x is %d \n', vary_val, varx_val)
+fprintf('Test set: Variance of y is %s, variance of x is %d \n', vary_test, varx_test)
 
-    %% nine step prediction
+%% nine step prediction
 
-    ehat_inp_9 = xtk-x;
-    ehat_9 = ytk-y;
-    [varx_val,varx_test] = evaluate_performance(ehat_inp_9, index_validation, index_test);
-    [vary_val, vary_test] = evaluate_performance(ehat_9, index_validation, index_test);
+ehat_inp_9 = xtk - x;
+ehat_9 = ytk - y;
+[varx_val, varx_test] = evaluate_performance(ehat_inp_9, index_validation, index_test);
+[vary_val, vary_test] = evaluate_performance(ehat_9, index_validation, index_test);
 
-    fprintf('Validation set: Variance of y is %s, variance of x is %d \n', vary_val, varx_val)
-    fprintf('Test set: Variance of y is %s, variance of x is %d \n', vary_test, varx_test)
+fprintf('Validation set: Variance of y is %s, variance of x is %d \n', vary_val, varx_val)
+fprintf('Test set: Variance of y is %s, variance of x is %d \n', vary_test, varx_test)
+
 %% Figures to report
 
-    figure
-    plot(y(index_validation(1)-1:index_validation(2)-1))
-    hold on
-    plot(yt1(index_validation(1):index_validation(2)))
-    legend('Real value','Prediction')
+figure
+plot(y(index_validation(1) - 1:index_validation(2) - 1))
+hold on
+plot(yt1(index_validation(1):index_validation(2)))
+title("1-step output prediction")
+legend('Real value', 'Prediction')
 
-    figure
-    plot(y(index_validation(1)-9:index_validation(2)-9))
-    hold on
-    plot(ytk(index_validation(1):index_validation(2)))
-    legend('Real value','Prediction')
+figure
+plot(y(index_validation(1) - 9:index_validation(2) - 9))
+hold on
+plot(ytk(index_validation(1):index_validation(2)))
+title("9-step output prediction")
+legend('Real value', 'Prediction')
 
+figure
+plot(x(index_validation(1) - 1:index_validation(2) - 1))
+hold on
+plot(xt1(index_validation(1):index_validation(2)))
+title("1-step input prediction")
+legend('Real value', 'Prediction')
 
+figure
+plot(x(index_validation(1) - 9:index_validation(2) - 9))
+hold on
+plot(xtk(index_validation(1):index_validation(2)))
+title("9-step input prediction")
+legend('Real value', 'Prediction')
 
-
-    figure
-    plot(x(index_validation(1)-1:index_validation(2)-1))
-    hold on
-    plot(xt1(index_validation(1):index_validation(2)))
-    legend('Real value','Prediction')
-
-    figure
-    plot(x(index_validation(1)-9:index_validation(2)-9))
-    hold on
-    plot(xtk(index_validation(1):index_validation(2)))
-    legend('Real value','Prediction')
-
-    %% parametrar for validation
+%% parametrar for validation
 % byt notation i legenderna timm typ a_1, B_1 osv
 
 figure
-plot(Xsave(:,index_validation(1):index_validation(2))')
+plot(Xsave(:, index_validation(1):index_validation(2))')
 legend('1', '2', '3', '4', '5', '6', '7', '8', '9')
 title('parameters for output prediction')
 ylim([-1.2 1.2])
 
 figure
-plot(Xsave_inp(:,index_validation(1):index_validation(2))')
+plot(Xsave_inp(:, index_validation(1):index_validation(2))')
 legend('1', '2', '3', '4', '5', '6')
 title('parameters for input prediction')
 ylim([-1.2 1.2])
 
 %% ACF av residualerna, är det ens relevant för kalman?!
 figure
-acf(ehat_1(index_validation(1):index_validation(2)), 50,0.05,1);
+acf(ehat_1(index_validation(1):index_validation(2)), 50, 0.05, 1);
 figure
-acf(ehat_9(index_validation(1):index_validation(2)), 50,0.05,1);
+acf(ehat_9(index_validation(1):index_validation(2)), 50, 0.05, 1);
 
-
 figure
-acf(ehat_inp_1(index_validation(1):index_validation(2)), 50,0.05,1);
+acf(ehat_inp_1(index_validation(1):index_validation(2)), 50, 0.05, 1);
 figure
-acf(ehat_inp_9(index_validation(1):index_validation(2)), 50,0.05,1);
+acf(ehat_inp_9(index_validation(1):index_validation(2)), 50, 0.05, 1);
