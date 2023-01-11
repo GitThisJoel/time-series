@@ -20,8 +20,8 @@ noLags = 50;
 run_test = 1;
 
 if run_test
-    x = halt_ing_rep;
-    y = halt_konc;
+    x = halt_ing_rep - mean(halt_ing_rep);
+    y = halt_konc - mean(halt_konc);
 else
     x = [inp_modeling_set; inp_validation_set];
     y = [modeling_set; validation_set];
@@ -52,11 +52,11 @@ n_inp = length(find(polys)) - 1;
 N = length(y);
 A_inp = eye(n_inp);
 
-ReA = 0.006;
-ReC = 0.008;
+ReA = 6e-3;
+ReC = 8e-3;
 Re_inp = diag([ReA * ones(1, sum(nzA_inp) - 1), 0 ReC * ones(1, sum(nzC_inp) - 1)]);
 
-Rw_inp = 3;
+Rw_inp = 4;
 
 % Initial input values
 Rxx1_inp = 10 * eye(size(A_inp));
@@ -108,12 +108,12 @@ n = length(find(polys)) - 1;
 N = length(y);
 A = eye(n);
 
-ReA = 0.00006;
-ReB = 6e-5; % where does B begin, should there be a value?
-ReC = 0.002; % where does C begin, should there be a value?
+ReA = 6e-5;
+ReB = 6e-7;
+ReC = 2e-3;
 Re = diag([ReA * ones(1, sum(nzA) - 1), 0 ReC * ones(1, sum(nzC) - 1), ReB * ones(1, sum(nzB))]);
 
-Rw = 3;
+Rw = 15;
 
 % Initial values
 Rxx1 = 10 * eye(size(A));
@@ -258,8 +258,8 @@ legend('1', '2', '3', '4', '5', '6', '7', '8', '9')
 title('parameters for output prediction')
 
 %% one step prediction
-ehat_inp_1 = (xt1(1:end - 1)' - x(2:end));
-ehat_1 = yt1(1:end - 1)' - y(2:end);
+ehat_inp_1 = xt1' - x;
+ehat_1 = yt1' - y;
 ehat_val = var(ehat(index_validation(1):index_validation(2)));
 
 [varx_val, varx_test] = evaluate_performance(ehat_inp_1, index_validation, index_test);
@@ -286,12 +286,14 @@ figure
 plot(y(index_validation(1):index_validation(2)))
 hold on
 plot(yt1(index_validation(1):index_validation(2)))
+title("1-step output prediction")
 legend('Real value', 'Prediction')
 
 figure
 plot(y(index_validation(1):index_validation(2)))
 hold on
 plot(ytk(index_validation(1):index_validation(2)))
+title("9-step output prediction")
 legend('Real value', 'Prediction')
 
 figure
@@ -312,12 +314,14 @@ figure
 plot(x(index_validation(1):index_validation(2)))
 hold on
 plot(xt1(index_validation(1) + 1:index_validation(2) + 1))
+title("1-step input prediction")
 legend('Real value', 'Prediction')
 
 figure
 plot(x(index_validation(1):index_validation(2)))
 hold on
 plot(xtk(index_validation(1) + 9:index_validation(2) + 9))
+title("9-step input prediction")
 legend('Real value', 'Prediction')
 
 %% parametrar for validation

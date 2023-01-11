@@ -136,3 +136,12 @@ y_all = halt_konc - mean(halt_konc);
 
 fprintf('Validation set: Variance of y is %s, variance of x is %d \n', vary_val, varx_val)
 fprintf('Test set: Variance of y is %s, variance of x is %d \n', vary_test, varx_test)
+
+%% test...
+
+figure
+plot(ehaty(index_validation(1):index_validation(2)))
+hold on
+plot(y_all(index_validation(1):index_validation(2))) 
+plot(yhat(index_validation(1):index_validation(2)))
+
