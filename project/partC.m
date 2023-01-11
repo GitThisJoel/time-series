@@ -257,41 +257,41 @@ plot(Xsave')
 legend('1', '2', '3', '4', '5', '6', '7', '8', '9')
 title('parameters for output prediction')
 
-% one step prediction
-ehat_inp_1 = xt1 - x;
-ehat_1 = yt1 - y;
+%% one step prediction
+ehat_inp_1 = (xt1(1:end - 1)' - x(2:end));
+ehat_1 = yt1(1:end - 1)' - y(2:end);
+ehat_val = var(ehat(index_validation(1):index_validation(2)));
 
 [varx_val, varx_test] = evaluate_performance(ehat_inp_1, index_validation, index_test);
 [vary_val, vary_test] = evaluate_performance(ehat_1, index_validation, index_test);
 
-fprintf('one step prediction ')
+fprintf('one step prediction \n')
 fprintf('Validation set: Variance of y is %s, variance of x is %d \n', vary_val, varx_val)
-fprintf('Test set: Variance of y is %s, variance of x is %d \n', vary_test, varx_test)
+%fprintf('Test set: Variance of y is %s, variance of x is %d \n', vary_test, varx_test)
+fprintf('ehat on the validation set is %s, and the one step prediction residual is %s', ehat_val, vary_val)
 
 %% nine step prediction
 
-ehat_inp_9 = xtk - x;
-ehat_9 = ytk - y;
+ehat_inp_9 = xtk' - x;
+ehat_9 = ytk' - y;
 [varx_val, varx_test] = evaluate_performance(ehat_inp_9, index_validation, index_test);
 [vary_val, vary_test] = evaluate_performance(ehat_9, index_validation, index_test);
 
+fprintf('nine step prediction \n')
 fprintf('Validation set: Variance of y is %s, variance of x is %d \n', vary_val, varx_val)
-fprintf('Test set: Variance of y is %s, variance of x is %d \n', vary_test, varx_test)
-
+%fprintf('Test set: Variance of y is %s, variance of x is %d \n', vary_test, varx_test)
 %% Figures to report
 
 figure
-plot(y(index_validation(1) - 1:index_validation(2) - 1))
+plot(y(index_validation(1):index_validation(2)))
 hold on
 plot(yt1(index_validation(1):index_validation(2)))
-title("1-step output prediction")
 legend('Real value', 'Prediction')
 
 figure
-plot(y(index_validation(1) - 9:index_validation(2) - 9))
+plot(y(index_validation(1):index_validation(2)))
 hold on
 plot(ytk(index_validation(1):index_validation(2)))
-title("9-step output prediction")
 legend('Real value', 'Prediction')
 
 figure
@@ -306,6 +306,18 @@ plot(x(index_validation(1) - 9:index_validation(2) - 9))
 hold on
 plot(xtk(index_validation(1):index_validation(2)))
 title("9-step input prediction")
+legend('Real value', 'Prediction')
+
+figure
+plot(x(index_validation(1):index_validation(2)))
+hold on
+plot(xt1(index_validation(1) + 1:index_validation(2) + 1))
+legend('Real value', 'Prediction')
+
+figure
+plot(x(index_validation(1):index_validation(2)))
+hold on
+plot(xtk(index_validation(1) + 9:index_validation(2) + 9))
 legend('Real value', 'Prediction')
 
 %% parametrar for validation
