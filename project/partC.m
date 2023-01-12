@@ -306,14 +306,14 @@ fprintf('Test set: Variance of y is %s, variance of x is %d \n', vary_test, varx
 %% Figures to report
 
 figure
-plot(y(index_validation(1):index_validation(2)))
+plot(y(index_validation(1)-1:index_validation(2)-1))
 hold on
 plot(yt1(index_validation(1):index_validation(2)))
 title("1-step output prediction")
 legend('Real value', 'Prediction')
 
 figure
-plot(y(index_validation(1):index_validation(2)))
+plot(y(index_validation(1)-9:index_validation(2)-9))
 hold on
 plot(ytk(index_validation(1):index_validation(2)))
 title("9-step output prediction")
@@ -352,13 +352,13 @@ legend('Real value', 'Prediction')
 
 figure
 plot(Xsave(:, index_validation(1):index_validation(2))')
-legend('1', '2', '3', '4', '5', '6', '7', '8', '9')
+legend('a_1', '1', 'c_1', 'c_2', 'c_3', 'b_3', 'b_4')
 title('parameters for output prediction')
 ylim([-1.2 1.2])
 
 figure
 plot(Xsave_inp(:, index_validation(1):index_validation(2))')
-legend('1', '2', '3', '4', '5', '6')
+legend('a_1', 'a_2', '1')
 title('parameters for input prediction')
 ylim([-1.2 1.2])
 
