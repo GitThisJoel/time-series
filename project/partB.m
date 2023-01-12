@@ -64,7 +64,7 @@ present(input_model)
 checkIfWhite(input_model_res);
 ACFnPACFnNormplot(input_model_res, noLags, 0.05, 'input model', 0);
 
-save('input_model.mat', 'input_model')
+% save('input_model.mat', 'input_model')
 
 %% tried diff, did not help.
 [w_t, eps_t] = pre_white(input_model, x, y);
