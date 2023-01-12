@@ -31,11 +31,21 @@ end
 load('model_part_B_final.mat');
 load('input_model.mat');
 
-% %% Recursive model
+remove_coeffs = 1;
 
 %% input model
 Ax_inp = input_model.A;
 Cx_inp = input_model.C;
+
+if remove_coeffs
+    % Ax_inp(2) = 0;
+    Ax_inp(3) = 0; % no significant loss in performance
+    % Ax_inp = Ax_inp(1:end-1);
+
+    % Cx_inp(3) = 0; % no significant loss in performance
+    % Cx_inp = Cx_inp(1:3); % no significant loss in performance
+    Cx_inp = Cx_inp(1:1); % no significant loss in performance
+end
 
 degA_inp = poly_degree(Ax_inp);
 degC_inp = poly_degree(Cx_inp);
@@ -52,7 +62,7 @@ n_inp = length(find(polys)) - 1;
 N = length(y);
 A_inp = eye(n_inp);
 
-ReA = 6e-3;
+ReA = 0; % 6e-8;
 ReC = 8e-3;
 Re_inp = diag([ReA * ones(1, sum(nzA_inp) - 1), 0 ReC * ones(1, sum(nzC_inp) - 1)]);
 
@@ -60,7 +70,7 @@ Rw_inp = 4;
 
 % Initial input values
 Rxx1_inp = 10 * eye(size(A_inp));
-xtt1_inp = [Ax_inp(2:end) Cx_inp(find(Cx_inp))]'; % start with initial model parameters
+xtt1_inp = [Ax_inp(find(Ax_inp(2:end))) Cx_inp(find(Cx_inp))]'; % start with initial model parameters
 
 % Vectors to store values in
 ehat_inp = zeros(1, N);
@@ -83,6 +93,18 @@ Xsave_inp = zeros(n_inp, N);
 Ax = conv(modelB.D, modelB.F);
 Bx = conv(modelB.D, modelB.B);
 Cx = conv(modelB.F, modelB.C);
+
+if remove_coeffs
+    % Ax = Ax(1:1);
+
+    Bx(5) = 0; % no significant loss in performance
+    Bx(6) = 0; % no significant loss in performance
+    % Bx = Bx(1:end - 1);
+
+    % Cx(2) = 0;
+    % Cx(3) = 0; % slight wore performance
+    % Cx = Cx(1:end-1);
+end
 
 % some poly properties
 % degrees of the polynomials
@@ -108,8 +130,8 @@ n = length(find(polys)) - 1;
 N = length(y);
 A = eye(n);
 
-ReA = 6e-5;
-ReB = 6e-7;
+ReA = 0; % 6e-7;
+ReB = 0; % 6e-9;
 ReC = 2e-3;
 Re = diag([ReA * ones(1, sum(nzA) - 1), 0 ReC * ones(1, sum(nzC) - 1), ReB * ones(1, sum(nzB))]);
 
@@ -117,7 +139,7 @@ Rw = 15;
 
 % Initial values
 Rxx1 = 10 * eye(size(A));
-xtt1 = [Ax(2:end) Cx Bx(find(Bx))]';
+xtt1 = [Ax(2:end) Cx(find(Cx)) Bx(find(Bx))]';
 
 % Vectors to store values in
 Xsave = zeros(n, N);
@@ -267,7 +289,7 @@ ehat_val = var(ehat(index_validation(1):index_validation(2)));
 
 fprintf('one step prediction \n')
 fprintf('Validation set: Variance of y is %s, variance of x is %d \n', vary_val, varx_val)
-%fprintf('Test set: Variance of y is %s, variance of x is %d \n', vary_test, varx_test)
+fprintf('Test set: Variance of y is %s, variance of x is %d \n', vary_test, varx_test)
 fprintf('ehat on the validation set is %s, and the one step prediction residual is %s', ehat_val, vary_val)
 
 %% nine step prediction
@@ -279,7 +301,8 @@ ehat_9 = ytk' - y;
 
 fprintf('nine step prediction \n')
 fprintf('Validation set: Variance of y is %s, variance of x is %d \n', vary_val, varx_val)
-%fprintf('Test set: Variance of y is %s, variance of x is %d \n', vary_test, varx_test)
+fprintf('Test set: Variance of y is %s, variance of x is %d \n', vary_test, varx_test)
+
 %% Figures to report
 
 figure
